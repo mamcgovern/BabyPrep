@@ -38,3 +38,83 @@ h3,
 p {
   margin-top: 0;
 }
+
+.login-page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 30px;
+  background:
+    radial-gradient(circle at 20% 20%, var(--color-pink-pale), transparent 35%),
+    radial-gradient(circle at 80% 80%, var(--color-blue-pale), transparent 35%),
+    var(--color-background);
+}
+
+.login-card {
+  width: min(100%, 430px);
+  padding: 48px 42px;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-white);
+  box-shadow: 0 8px 30px rgba(80, 70, 70, 0.07);
+  text-align: center;
+}
+
+.login-eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-pink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 500;
+}
+
+.login-description {
+  margin: 15px auto 30px;
+  max-width: 330px;
+  color: var(--color-text-light);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.google-button:hover {
+  border-color: var(--color-pink);
+  box-shadow: var(--shadow-hover);
+}
+
+.google-icon {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.auth-loading {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  color: var(--color-text-light);
+  font-size: 12px;
+}

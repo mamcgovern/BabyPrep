@@ -1,6 +1,8 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import Tasks from './pages/Tasks'
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import Tasks from './pages/Tasks';
+import { useAuth } from './context/AuthContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -14,7 +16,7 @@ const navigation = [
   { label: 'Baby Names', path: '/names', icon: 'A' },
   { label: 'Questions for Us', path: '/questions', icon: '?' },
   { label: 'Notes', path: '/notes', icon: '≡' },
-]
+];
 
 function PlaceholderPage({ title, description }) {
   return (
@@ -36,10 +38,10 @@ function PlaceholderPage({ title, description }) {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-function App() {
+function AppShell() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -209,7 +211,34 @@ function App() {
         </Routes>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+function ProtectedApp() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="auth-loading">
+        <span>Loading...</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <AppShell />;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/*" element={<ProtectedApp />} />
+    </Routes>
+  );
+}
+
+export default App;
