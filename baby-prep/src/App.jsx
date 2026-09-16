@@ -7,6 +7,7 @@ import Inspiration from './pages/Inspiration';
 import BabyGear from './pages/BabyGear';
 import Planning from './pages/Planning';
 import Budget from './pages/Budget';
+import Appointments from './pages/Appointments';
 
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
@@ -15,6 +16,7 @@ import { InspirationProvider } from './context/InspirationContext';
 import { BabyGearProvider } from './context/BabyGearContext';
 import { PlanningProvider } from './context/PlanningContext';
 import { BudgetProvider } from './context/BudgetContext';
+import { AppointmentProvider } from './context/AppointmentContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -123,15 +125,7 @@ function AppShell() {
           <Route path="/inspiration" element={<Inspiration />} />
           <Route path="/planning" element={<Planning />} />
           <Route path="/budget" element={<Budget />} />
-          <Route
-            path="/appointments"
-            element={
-              <PlaceholderPage
-                title="Appointments"
-                description="Classes, appointments, tours, and other important dates."
-              />
-            }
-          />
+          <Route path="/appointments" element={<Appointments />} />
           <Route
             path="/names"
             element={
