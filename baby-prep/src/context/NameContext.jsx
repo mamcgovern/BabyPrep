@@ -65,6 +65,8 @@ const defaultThemes = [
   'Vintage',
 ];
 
+const defaultBabyNamePlaceholder = 'Baby Bergan';
+
 function normalizeThemes(value) {
   if (Array.isArray(value)) {
     return value;
@@ -93,6 +95,9 @@ function sortNames(names) {
 export function NameProvider({ children }) {
   const [names, setNames] = useState([]);
   const [themes, setThemes] = useState(defaultThemes);
+  const [babyNamePlaceholder, setBabyNamePlaceholder] = useState(
+    defaultBabyNamePlaceholder
+  );
   const [loading, setLoading] = useState(true);
   const [themesLoading, setThemesLoading] = useState(true);
   const [error, setError] = useState('');
@@ -108,7 +113,9 @@ export function NameProvider({ children }) {
           return {
             id: nameDoc.id,
             ...data,
-            themes: normalizeThemes(data.themes ?? data.theme),
+            themes: normalizeThemes(
+              data.themes ?? data.theme
+            ),
           };
         });
 
@@ -117,7 +124,10 @@ export function NameProvider({ children }) {
         setError('');
       },
       (snapshotError) => {
-        console.error('Error loading baby names:', snapshotError);
+        console.error(
+          'Error loading baby names:',
+          snapshotError
+        );
         setLoading(false);
         setError('We could not load your baby names.');
       }
@@ -138,17 +148,38 @@ export function NameProvider({ children }) {
           } else {
             setThemes(defaultThemes);
           }
+
+          if (
+            typeof data.babyNamePlaceholder === 'string' &&
+            data.babyNamePlaceholder.trim()
+          ) {
+            setBabyNamePlaceholder(
+              data.babyNamePlaceholder.trim()
+            );
+          } else {
+            setBabyNamePlaceholder(
+              defaultBabyNamePlaceholder
+            );
+          }
         } else {
           setThemes(defaultThemes);
+          setBabyNamePlaceholder(
+            defaultBabyNamePlaceholder
+          );
         }
 
         setThemesLoading(false);
         setThemesError('');
       },
       (snapshotError) => {
-        console.error('Error loading name themes:', snapshotError);
+        console.error(
+          'Error loading name settings:',
+          snapshotError
+        );
         setThemesLoading(false);
-        setThemesError('We could not load your name themes.');
+        setThemesError(
+          'We could not load your baby name settings.'
+        );
       }
     );
 
@@ -196,7 +227,10 @@ export function NameProvider({ children }) {
 
     delete updatedData.theme;
 
-    await updateDoc(doc(namesCollection, nameId), updatedData);
+    await updateDoc(
+      doc(namesCollection, nameId),
+      updatedData
+    );
   };
 
   const deleteName = async (nameId) => {
@@ -217,7 +251,9 @@ export function NameProvider({ children }) {
     );
 
     if (alreadyExists) {
-      throw new Error('A theme with that name already exists.');
+      throw new Error(
+        'A theme with that name already exists.'
+      );
     }
 
     const updatedThemes = [...themes, trimmedTheme];
@@ -248,7 +284,9 @@ export function NameProvider({ children }) {
     );
 
     if (duplicateTheme) {
-      throw new Error('A theme with that name already exists.');
+      throw new Error(
+        'A theme with that name already exists.'
+      );
     }
 
     const updatedThemes = themes.map((theme) =>
@@ -265,7 +303,9 @@ export function NameProvider({ children }) {
     );
 
     const namesUsingTheme = names.filter((name) =>
-      normalizeThemes(name.themes ?? name.theme).includes(oldTheme)
+      normalizeThemes(
+        name.themes ?? name.theme
+      ).includes(oldTheme)
     );
 
     await Promise.all(
@@ -274,12 +314,17 @@ export function NameProvider({ children }) {
           name.themes ?? name.theme
         );
 
-        return updateDoc(doc(namesCollection, name.id), {
-          themes: currentThemes.map((theme) =>
-            theme === oldTheme ? trimmedTheme : theme
-          ),
-          updatedAt: serverTimestamp(),
-        });
+        return updateDoc(
+          doc(namesCollection, name.id),
+          {
+            themes: currentThemes.map((theme) =>
+              theme === oldTheme
+                ? trimmedTheme
+                : theme
+            ),
+            updatedAt: serverTimestamp(),
+          }
+        );
       })
     );
   };
@@ -299,7 +344,9 @@ export function NameProvider({ children }) {
     );
 
     const namesUsingTheme = names.filter((name) =>
-      normalizeThemes(name.themes ?? name.theme).includes(themeName)
+      normalizeThemes(
+        name.themes ?? name.theme
+      ).includes(themeName)
     );
 
     await Promise.all(
@@ -308,28 +355,60 @@ export function NameProvider({ children }) {
           name.themes ?? name.theme
         );
 
-        return updateDoc(doc(namesCollection, name.id), {
-          themes: currentThemes.filter(
-            (theme) => theme !== themeName
-          ),
-          updatedAt: serverTimestamp(),
-        });
+        return updateDoc(
+          doc(namesCollection, name.id),
+          {
+            themes: currentThemes.filter(
+              (theme) => theme !== themeName
+            ),
+            updatedAt: serverTimestamp(),
+          }
+        );
       })
     );
   };
 
+  const updateBabyNamePlaceholder = async (
+    placeholder
+  ) => {
+    const trimmedPlaceholder = placeholder.trim();
+
+    if (!trimmedPlaceholder) {
+      throw new Error(
+        'Baby name placeholder cannot be empty.'
+      );
+    }
+
+    await setDoc(
+      settingsDocument,
+      {
+        babyNamePlaceholder: trimmedPlaceholder,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    setBabyNamePlaceholder(trimmedPlaceholder);
+  };
+
   const getName = (nameId) => {
-    return names.find((name) => name.id === nameId) || null;
+    return (
+      names.find((name) => name.id === nameId) || null
+    );
   };
 
   const stats = useMemo(() => {
-    const activeNames = names.filter((name) => name.status !== 'No');
+    const activeNames = names.filter(
+      (name) => name.status !== 'No'
+    );
 
     return {
       total: names.length,
       active: activeNames.length,
       favorites: names.filter(
-        (name) => name.favorite || name.status === 'Favorite'
+        (name) =>
+          name.favorite ||
+          name.status === 'Favorite'
       ).length,
       bothLike: names.filter(
         (name) =>
@@ -353,6 +432,7 @@ export function NameProvider({ children }) {
       value={{
         names,
         themes,
+        babyNamePlaceholder,
         stats,
         loading,
         themesLoading,
@@ -364,6 +444,7 @@ export function NameProvider({ children }) {
         addTheme,
         updateTheme,
         deleteTheme,
+        updateBabyNamePlaceholder,
         getName,
       }}
     >

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import ProgressBar from '../components/ProgressBar';
 import { useTasks } from '../context/TaskContext';
+import { useNames } from '../context/NameContext';
 
 function Dashboard() {
   const { tasks, stats, loading } = useTasks();
@@ -14,6 +15,8 @@ function Dashboard() {
     .slice(0, 4);
 
   const recentTasks = activeTasks.slice(0, 5);
+
+  const { babyNamePlaceholder } = useNames();
 
   if (loading) {
     return (
@@ -30,10 +33,9 @@ function Dashboard() {
       <div className="dashboard-header">
         <div>
           <p className="eyebrow">WELCOME BACK</p>
-          <h1>Before Baby</h1>
+          <h1>Getting ready for {babyNamePlaceholder}</h1>
           <p className="page-description">
-            A little space for Maddie & Nick to plan, research, and get ready
-            for whatever comes next.
+            Keep everything you're planning, researching, and deciding for your little one in one place.
           </p>
         </div>
 

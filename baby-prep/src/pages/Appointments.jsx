@@ -4,6 +4,7 @@ import {
   appointmentTypes,
   useAppointments,
 } from '../context/AppointmentContext';
+import { useNames } from '../context/NameContext';
 
 const emptyForm = {
   title: '',
@@ -16,6 +17,8 @@ const emptyForm = {
   notes: '',
   status: 'Upcoming',
 };
+
+const { babyNamePlaceholder } = useNames();
 
 function formatDate(date) {
   if (!date) {
@@ -72,17 +75,17 @@ function AppointmentModal({
     setForm(
       editingItem
         ? {
-            title: editingItem.title || '',
-            type: editingItem.type || 'Healthcare',
-            date: editingItem.date || '',
-            time: editingItem.time || '',
-            location: editingItem.location || '',
-            cost:
-              editingItem.cost == null ? '' : editingItem.cost,
-            link: editingItem.link || '',
-            notes: editingItem.notes || '',
-            status: editingItem.status || 'Upcoming',
-          }
+          title: editingItem.title || '',
+          type: editingItem.type || 'Healthcare',
+          date: editingItem.date || '',
+          time: editingItem.time || '',
+          location: editingItem.location || '',
+          cost:
+            editingItem.cost == null ? '' : editingItem.cost,
+          link: editingItem.link || '',
+          notes: editingItem.notes || '',
+          status: editingItem.status || 'Upcoming',
+        }
         : emptyForm
     );
   }, [isOpen, editingItem]);
@@ -301,17 +304,17 @@ function AppointmentCard({ appointment, onEdit, onDelete }) {
         <span>
           {appointment.date
             ? new Date(
-                `${appointment.date}T12:00:00`
-              ).toLocaleDateString('en-US', {
-                month: 'short',
-              })
+              `${appointment.date}T12:00:00`
+            ).toLocaleDateString('en-US', {
+              month: 'short',
+            })
             : 'TBD'}
         </span>
         <strong>
           {appointment.date
             ? new Date(
-                `${appointment.date}T12:00:00`
-              ).getDate()
+              `${appointment.date}T12:00:00`
+            ).getDate()
             : '—'}
         </strong>
       </div>
@@ -447,8 +450,7 @@ export default function Appointments() {
           <p className="eyebrow">STAY ON TOP OF THINGS</p>
           <h1>Appointments</h1>
           <p className="page-description">
-            Keep track of classes, tours, appointments, and
-            other important dates as you prepare for baby.
+            Keep track of appointments, questions, and things to discuss for {babyNamePlaceholder}.
           </p>
         </div>
 

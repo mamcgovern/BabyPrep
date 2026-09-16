@@ -4,6 +4,7 @@ import {
   planningStatuses,
   usePlanning,
 } from '../context/PlanningContext';
+import { useNames } from '../context/NameContext';
 
 const emptyForm = {
   title: '',
@@ -14,6 +15,8 @@ const emptyForm = {
   decision: '',
   notes: '',
 };
+
+const { babyNamePlaceholder } = useNames();
 
 function PlanningModal({
   isOpen,
@@ -319,7 +322,7 @@ function Planning() {
           <p className="page-eyebrow">THINK & DECIDE</p>
           <h1>Planning</h1>
           <p className="page-description">
-            The bigger conversations and decisions we want to make together.
+            Everything you're working through before {babyNamePlaceholder} arrives.
           </p>
         </div>
 
@@ -361,9 +364,8 @@ function Planning() {
             {['All', ...planningCategories].map((category) => (
               <button
                 key={category}
-                className={`filter-pill ${
-                  activeCategory === category ? 'active' : ''
-                }`}
+                className={`filter-pill ${activeCategory === category ? 'active' : ''
+                  }`}
                 onClick={() => setActiveCategory(category)}
               >
                 {category}
@@ -379,9 +381,8 @@ function Planning() {
             {['All', ...planningStatuses].map((status) => (
               <button
                 key={status}
-                className={`filter-pill ${
-                  activeStatus === status ? 'active' : ''
-                }`}
+                className={`filter-pill ${activeStatus === status ? 'active' : ''
+                  }`}
                 onClick={() => setActiveStatus(status)}
               >
                 {status}

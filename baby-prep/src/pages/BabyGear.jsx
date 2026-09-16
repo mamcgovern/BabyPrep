@@ -5,6 +5,7 @@ import {
   gearStatuses,
   useBabyGear,
 } from '../context/BabyGearContext';
+import { useNames } from '../context/NameContext';
 
 const emptyForm = {
   name: '',
@@ -36,6 +37,8 @@ const statusClassNames = {
   Decided: 'decided',
   "Don't Want": 'dont-want',
 };
+
+const { babyNamePlaceholder } = useNames();
 
 function formatCurrency(value) {
   const number = Number(value);
@@ -91,7 +94,7 @@ function GearModal({
         brand: editingItem.brand || '',
         price:
           editingItem.price === null ||
-          editingItem.price === undefined
+            editingItem.price === undefined
             ? ''
             : String(editingItem.price),
         productLink: editingItem.productLink || '',
@@ -99,12 +102,12 @@ function GearModal({
         status: editingItem.status || 'Researching',
         maddieRating:
           editingItem.maddieRating === null ||
-          editingItem.maddieRating === undefined
+            editingItem.maddieRating === undefined
             ? ''
             : String(editingItem.maddieRating),
         nickRating:
           editingItem.nickRating === null ||
-          editingItem.nickRating === undefined
+            editingItem.nickRating === undefined
             ? ''
             : String(editingItem.nickRating),
         notes: editingItem.notes || '',
@@ -308,11 +311,10 @@ function GearModal({
                 <button
                   key={status}
                   type="button"
-                  className={`gear-status-option ${
-                    form.status === status
+                  className={`gear-status-option ${form.status === status
                       ? `selected ${statusClassNames[status]}`
                       : ''
-                  }`}
+                    }`}
                   onClick={() =>
                     setForm((current) => ({
                       ...current,
@@ -519,9 +521,8 @@ function GearCard({
 
         <button
           type="button"
-          className={`gear-favorite-button ${
-            item.favorite ? 'active' : ''
-          }`}
+          className={`gear-favorite-button ${item.favorite ? 'active' : ''
+            }`}
           onClick={() => onToggleFavorite(item)}
           aria-label={
             item.favorite
@@ -691,9 +692,8 @@ function GearCard({
 
         <div className="gear-card-actions">
           <label
-            className={`gear-compare-control ${
-              isComparing ? 'active' : ''
-            } ${compareDisabled ? 'disabled' : ''}`}
+            className={`gear-compare-control ${isComparing ? 'active' : ''
+              } ${compareDisabled ? 'disabled' : ''}`}
           >
             <input
               type="checkbox"
@@ -762,8 +762,8 @@ function ComparePanel({
       label: 'Price',
       getValue: (item) =>
         item.price === null ||
-        item.price === undefined ||
-        item.price === ''
+          item.price === undefined ||
+          item.price === ''
           ? 'Not listed'
           : formatCurrency(item.price),
     },
@@ -1067,7 +1067,7 @@ function BabyGear() {
       );
       setPageError(
         budgetError.message ||
-          'We could not add that product to your budget.'
+        'We could not add that product to your budget.'
       );
     }
   };
@@ -1121,9 +1121,7 @@ function BabyGear() {
           </p>
           <h1>Baby Gear</h1>
           <p className="page-description">
-            Research the things you might want,
-            compare your options, and keep track of
-            what you both think.
+            Build your list of things {babyNamePlaceholder} will actually need.
           </p>
         </div>
 
@@ -1291,9 +1289,8 @@ function BabyGear() {
 
           <button
             type="button"
-            className={`gear-filter-button ${
-              favoriteOnly ? 'active' : ''
-            }`}
+            className={`gear-filter-button ${favoriteOnly ? 'active' : ''
+              }`}
             onClick={() =>
               setFavoriteOnly((current) => !current)
             }
