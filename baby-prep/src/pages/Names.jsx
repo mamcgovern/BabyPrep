@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   nameGenders,
   nameRatings,
@@ -49,6 +50,60 @@ function getRatingClass(rating) {
   return rating?.toLowerCase().replace(/\s+/g, '-') || 'no-opinion';
 }
 
+function getNameAgreement(maddieRating, nickRating) {
+  const maddieLove = maddieRating === 'Love';
+  const nickLove = nickRating === 'Love';
+
+  const maddieLike =
+    maddieRating === 'Love' || maddieRating === 'Like';
+
+  const nickLike =
+    nickRating === 'Love' || nickRating === 'Like';
+
+  if (maddieLove && nickLove) {
+    return {
+      label: 'Both Love',
+      className: 'both-love',
+    };
+  }
+
+  if (maddieLove || nickLove) {
+    return {
+      label: 'One Loves',
+      className: 'one-loves',
+    };
+  }
+
+  if (maddieLike && nickLike) {
+    return {
+      label: 'Both Like',
+      className: 'both-like',
+    };
+  }
+
+  if (
+    maddieRating === 'No Opinion' &&
+    nickRating === 'No Opinion'
+  ) {
+    return {
+      label: 'Undecided',
+      className: 'undecided',
+    };
+  }
+
+  if (maddieRating === 'No' && nickRating === 'No') {
+    return {
+      label: 'Neither',
+      className: 'neither',
+    };
+  }
+
+  return {
+    label: 'Mixed',
+    className: 'mixed',
+  };
+}
+
 function ThemePicker({ themes, selectedThemes, onToggle }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -96,9 +151,8 @@ function ThemePicker({ themes, selectedThemes, onToggle }) {
     <div className="theme-picker-wrapper" ref={pickerRef}>
       <button
         type="button"
-        className={`theme-picker-trigger ${
-          open ? 'open' : ''
-        }`}
+        className={`theme-picker-trigger ${open ? 'open' : ''
+          }`}
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
         aria-haspopup="listbox"
@@ -135,7 +189,6 @@ function ThemePicker({ themes, selectedThemes, onToggle }) {
           <div className="theme-picker-popover-header">
             <div>
               <strong>Select themes</strong>
-
               <span>
                 {selectedThemes.length === 0
                   ? 'Choose one or more'
@@ -184,15 +237,13 @@ function ThemePicker({ themes, selectedThemes, onToggle }) {
                   <button
                     key={theme}
                     type="button"
-                    className={`theme-picker-option ${
-                      selected ? 'selected' : ''
-                    }`}
+                    className={`theme-picker-option ${selected ? 'selected' : ''
+                      }`}
                     onClick={() => onToggle(theme)}
                   >
                     <span
-                      className={`theme-picker-checkbox ${
-                        selected ? 'checked' : ''
-                      }`}
+                      className={`theme-picker-checkbox ${selected ? 'checked' : ''
+                        }`}
                     >
                       {selected ? '✓' : ''}
                     </span>
@@ -272,8 +323,8 @@ function NameModal({ name, onClose }) {
         ...current,
         themes: selected
           ? current.themes.filter(
-              (selectedTheme) => selectedTheme !== theme
-            )
+            (selectedTheme) => selectedTheme !== theme
+          )
           : [...current.themes, theme],
       };
     });
@@ -334,6 +385,7 @@ function NameModal({ name, onClose }) {
             <p className="eyebrow">
               {name ? 'EDIT NAME' : 'ADD NAME'}
             </p>
+
             <h2>
               {name ? 'Edit baby name' : 'Add a baby name'}
             </h2>
@@ -585,6 +637,11 @@ function NameCard({ name, onEdit, onDelete }) {
     ? name.nicknames
     : [];
 
+  const agreement = getNameAgreement(
+    name.maddieRating,
+    name.nickRating
+  );
+
   return (
     <article
       className={`name-card ${name.favorite ? 'favorite' : ''}`}
@@ -620,6 +677,11 @@ function NameCard({ name, onEdit, onDelete }) {
         >
           ···
         </button>
+      </div>
+
+      <div className={`agreement-badge ${agreement.className}`}>
+        <span className="agreement-dot" />
+        <span>{agreement.label}</span>
       </div>
 
       {nameThemes.length > 0 && (
@@ -715,6 +777,8 @@ function NameCard({ name, onEdit, onDelete }) {
 }
 
 export default function Names() {
+  const navigate = useNavigate();
+
   const {
     names,
     themes,
@@ -728,10 +792,84 @@ export default function Names() {
   const [genderFilter, setGenderFilter] = useState('All');
   const [themeFilter, setThemeFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [agreementFilter, setAgreementFilter] = useState('All');
   const [showFavoritesOnly, setShowFavoritesOnly] =
     useState(false);
   const [editingName, setEditingName] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const consideringCount = names.filter(
+    (name) => name.status === 'Considering'
+  ).length;
+
+  const handleStatFilter = (filter) => {
+    const isActive =
+      (filter === 'considering' &&
+        statusFilter === 'Considering' &&
+        genderFilter === 'All' &&
+        themeFilter === 'All' &&
+        agreementFilter === 'All' &&
+        !showFavoritesOnly) ||
+      (filter === 'favorites' &&
+        showFavoritesOnly &&
+        genderFilter === 'All' &&
+        themeFilter === 'All' &&
+        statusFilter === 'All' &&
+        agreementFilter === 'All') ||
+      (filter === 'both-love' &&
+        agreementFilter === 'Both Love' &&
+        genderFilter === 'All' &&
+        themeFilter === 'All' &&
+        statusFilter === 'All' &&
+        !showFavoritesOnly) ||
+      (filter === 'girl' &&
+        genderFilter === 'Girl' &&
+        themeFilter === 'All' &&
+        statusFilter === 'All' &&
+        agreementFilter === 'All' &&
+        !showFavoritesOnly) ||
+      (filter === 'boy' &&
+        genderFilter === 'Boy' &&
+        themeFilter === 'All' &&
+        statusFilter === 'All' &&
+        agreementFilter === 'All' &&
+        !showFavoritesOnly);
+
+    if (isActive) {
+      setGenderFilter('All');
+      setThemeFilter('All');
+      setStatusFilter('All');
+      setAgreementFilter('All');
+      setShowFavoritesOnly(false);
+      return;
+    }
+
+    setGenderFilter('All');
+    setThemeFilter('All');
+    setStatusFilter('All');
+    setAgreementFilter('All');
+    setShowFavoritesOnly(false);
+
+    if (filter === 'considering') {
+      setStatusFilter('Considering');
+    }
+
+    if (filter === 'favorites') {
+      setShowFavoritesOnly(true);
+    }
+
+    if (filter === 'both-love') {
+      setAgreementFilter('Both Love');
+    }
+
+    if (filter === 'girl') {
+      setGenderFilter('Girl');
+    }
+
+    if (filter === 'boy') {
+      setGenderFilter('Boy');
+    }
+  };
 
   const filteredNames = useMemo(() => {
     const searchTerm = search.trim().toLowerCase();
@@ -762,12 +900,20 @@ export default function Names() {
       const matchesFavorite =
         !showFavoritesOnly || name.favorite;
 
+      const matchesAgreement =
+        agreementFilter === 'All' ||
+        getNameAgreement(
+          name.maddieRating,
+          name.nickRating
+        ).label === agreementFilter;
+
       return (
         matchesSearch &&
         matchesGender &&
         matchesTheme &&
         matchesStatus &&
-        matchesFavorite
+        matchesFavorite &&
+        matchesAgreement
       );
     });
   }, [
@@ -776,6 +922,7 @@ export default function Names() {
     genderFilter,
     themeFilter,
     statusFilter,
+    agreementFilter,
     showFavoritesOnly,
   ]);
 
@@ -788,7 +935,11 @@ export default function Names() {
       return;
     }
 
-    await deleteName(name.id);
+    try {
+      await deleteName(name.id);
+    } catch (deleteError) {
+      console.error('Error deleting name:', deleteError);
+    }
   };
 
   const openAddModal = () => {
@@ -820,50 +971,115 @@ export default function Names() {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="button button-primary"
-          onClick={openAddModal}
-        >
-          + Add Name
-        </button>
+        <div className="names-header-actions">
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={() => navigate('/names/review')}
+          >
+            Review Names
+          </button>
+
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={openAddModal}
+          >
+            + Add Name
+          </button>
+        </div>
       </div>
 
       <div className="name-stats">
-        <div className="name-stat-card">
+        <button
+          type="button"
+          className={`name-stat-card ${statusFilter === 'Considering' &&
+              genderFilter === 'All' &&
+              themeFilter === 'All' &&
+              agreementFilter === 'All' &&
+              !showFavoritesOnly
+              ? 'active'
+              : ''
+            }`}
+          onClick={() => handleStatFilter('considering')}
+        >
           <span className="name-stat-number">
-            {stats.active}
+            {consideringCount}
           </span>
           <span className="name-stat-label">Considering</span>
-        </div>
+        </button>
 
-        <div className="name-stat-card">
+        <button
+          type="button"
+          className={`name-stat-card ${showFavoritesOnly &&
+              genderFilter === 'All' &&
+              themeFilter === 'All' &&
+              statusFilter === 'All' &&
+              agreementFilter === 'All'
+              ? 'active'
+              : ''
+            }`}
+          onClick={() => handleStatFilter('favorites')}
+        >
           <span className="name-stat-number">
             {stats.favorites}
           </span>
           <span className="name-stat-label">Favorites</span>
-        </div>
+        </button>
 
-        <div className="name-stat-card">
+        <button
+          type="button"
+          className={`name-stat-card ${agreementFilter === 'Both Love' &&
+              genderFilter === 'All' &&
+              themeFilter === 'All' &&
+              statusFilter === 'All' &&
+              !showFavoritesOnly
+              ? 'active'
+              : ''
+            }`}
+          onClick={() => handleStatFilter('both-love')}
+        >
           <span className="name-stat-number">
             {stats.bothLike}
           </span>
           <span className="name-stat-label">We both love</span>
-        </div>
+        </button>
 
-        <div className="name-stat-card">
+        <button
+          type="button"
+          className={`name-stat-card ${genderFilter === 'Girl' &&
+              themeFilter === 'All' &&
+              statusFilter === 'All' &&
+              agreementFilter === 'All' &&
+              !showFavoritesOnly
+              ? 'active'
+              : ''
+            }`}
+          onClick={() => handleStatFilter('girl')}
+        >
           <span className="name-stat-number">
             {stats.girls}
           </span>
           <span className="name-stat-label">Girl names</span>
-        </div>
+        </button>
 
-        <div className="name-stat-card">
+        <button
+          type="button"
+          className={`name-stat-card ${genderFilter === 'Boy' &&
+              themeFilter === 'All' &&
+              statusFilter === 'All' &&
+              agreementFilter === 'All' &&
+              !showFavoritesOnly
+              ? 'active'
+              : ''
+            }`}
+          onClick={() => handleStatFilter('boy')}
+        >
           <span className="name-stat-number">
             {stats.boys}
           </span>
           <span className="name-stat-label">Boy names</span>
-        </div>
+        </button>
       </div>
 
       <div className="names-toolbar">
@@ -881,9 +1097,10 @@ export default function Names() {
         <div className="name-filters">
           <select
             value={genderFilter}
-            onChange={(event) =>
-              setGenderFilter(event.target.value)
-            }
+            onChange={(event) => {
+              setGenderFilter(event.target.value);
+              setAgreementFilter('All');
+            }}
           >
             <option value="All">All genders</option>
 
@@ -926,9 +1143,8 @@ export default function Names() {
 
           <button
             type="button"
-            className={`filter-button ${
-              showFavoritesOnly ? 'active' : ''
-            }`}
+            className={`filter-button ${showFavoritesOnly ? 'active' : ''
+              }`}
             onClick={() =>
               setShowFavoritesOnly((current) => !current)
             }

@@ -162,6 +162,88 @@
   gap: 12px;
 }
 
+.agreement-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 12px;
+  padding: 5px 9px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 999px;
+  background: var(--color-background);
+  color: var(--color-text-light);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.agreement-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.agreement-badge.both-love {
+  border-color: #c8dfcf;
+  background: #f1f8f3;
+  color: #668a70;
+}
+
+.agreement-badge.both-love .agreement-dot {
+  background: #9fc1a7;
+}
+
+.agreement-badge.one-loves {
+  border-color: #dfd3e8;
+  background: #f7f3fa;
+  color: #857294;
+}
+
+.agreement-badge.one-loves .agreement-dot {
+  background: #b9a5c8;
+}
+
+.agreement-badge.both-like {
+  border-color: var(--color-blue-light);
+  background: var(--color-blue-pale);
+  color: #6f8da0;
+}
+
+.agreement-badge.both-like .agreement-dot {
+  background: var(--color-blue);
+}
+
+.agreement-badge.undecided {
+  border-color: var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text-muted);
+}
+
+.agreement-badge.undecided .agreement-dot {
+  background: #c8c2bd;
+}
+
+.agreement-badge.mixed {
+  border-color: #eadcc1;
+  background: #fbf7ee;
+  color: #9a8359;
+}
+
+.agreement-badge.mixed .agreement-dot {
+  background: var(--color-warning);
+}
+
+.agreement-badge.neither {
+  border-color: #e8d2d2;
+  background: #fbf3f3;
+  color: #9b7373;
+}
+
+.agreement-badge.neither .agreement-dot {
+  background: #c9a3a3;
+}
+
 .name-title-row {
   display: flex;
   align-items: center;
@@ -931,4 +1013,136 @@
   color: var(--color-text-muted);
   font-size: 9px;
   font-weight: 600;
+}
+
+.name-stat-card {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: inherit;
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.name-stat-card:hover {
+  border-color: var(--color-blue);
+  background: var(--color-blue-pale);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.name-stat-card.active {
+  border-color: var(--color-blue);
+  background: var(--color-blue-pale);
+  box-shadow: 0 0 0 3px rgba(169, 201, 220, 0.12);
+}
+
+.name-stat-card:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+.name-stat-card .name-stat-number {
+  display: block;
+}
+
+.name-stat-card .name-stat-label {
+  display: block;
+}
+
+.agreement-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 12px;
+  padding: 5px 9px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 999px;
+  background: var(--color-background);
+  color: var(--color-text-light);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.agreement-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.agreement-badge.both-love {
+  border-color: #c8dfcf;
+  background: #f1f8f3;
+  color: #668a70;
+}
+
+.agreement-badge.both-love .agreement-dot {
+  background: #9fc1a7;
+}
+
+.agreement-badge.one-loves {
+  border-color: #dfd3e8;
+  background: #f7f3fa;
+  color: #857294;
+}
+
+.agreement-badge.one-loves .agreement-dot {
+  background: #b9a5c8;
+}
+
+.agreement-badge.both-like {
+  border-color: var(--color-blue-light);
+  background: var(--color-blue-pale);
+  color: #6f8da0;
+}
+
+.agreement-badge.both-like .agreement-dot {
+  background: var(--color-blue);
+}
+
+.agreement-badge.undecided {
+  border-color: var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text-muted);
+}
+
+.agreement-badge.undecided .agreement-dot {
+  background: #c8c2bd;
+}
+
+.agreement-badge.mixed {
+  border-color: #eadcc1;
+  background: #fbf7ee;
+  color: #9a8359;
+}
+
+.agreement-badge.mixed .agreement-dot {
+  background: var(--color-warning);
+}
+
+.agreement-badge.neither {
+  border-color: #e8d2d2;
+  background: #fbf3f3;
+  color: #9b7373;
+}
+
+.agreement-badge.neither .agreement-dot {
+  background: #c9a3a3;
+}
+
+.names-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

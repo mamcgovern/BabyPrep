@@ -10,6 +10,8 @@ import Budget from './pages/Budget';
 import Appointments from './pages/Appointments';
 import Names from './pages/Names';
 import Settings from './pages/Settings';
+import NameReview from './pages/NameReview';
+import Questions from './pages/Questions';
 
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
@@ -31,8 +33,7 @@ const navigation = [
   { label: 'Budget', path: '/budget', icon: '$' },
   { label: 'Appointments', path: '/appointments', icon: '□' },
   { label: 'Baby Names', path: '/names', icon: 'A' },
-  { label: 'Questions', path: '/questions', icon: '?' },
-  { label: 'Notes', path: '/notes', icon: '≡' },
+  { label: 'Thoughts & Questions', path: '/questions', icon: '?' },
 ];
 
 function PlaceholderPage({ title, description }) {
@@ -131,22 +132,12 @@ function AppShell() {
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/names" element={<Names />} />
           <Route
-            path="/questions"
-            element={
-              <PlaceholderPage
-                title="Questions for Us"
-                description="Thoughtful questions to answer separately, discuss together, and revisit later."
-              />
-            }
+            path="/names/review"
+            element={<NameReview />}
           />
           <Route
-            path="/notes"
-            element={
-              <PlaceholderPage
-                title="Notes"
-                description="A shared space for everything else."
-              />
-            }
+            path="/questions"
+            element={<Questions />}
           />
           <Route path="/settings" element={<Settings />} />
         </Routes>
@@ -176,13 +167,13 @@ function ProtectedApp() {
         <InspirationProvider>
           <BudgetProvider>
             <BabyGearProvider>
-                <AppointmentProvider>
-                  <NameProvider>
-                    <PlanningProvider>
-                      <AppShell />
-                    </PlanningProvider>
-                  </NameProvider>
-                </AppointmentProvider>
+              <AppointmentProvider>
+                <NameProvider>
+                  <PlanningProvider>
+                    <AppShell />
+                  </PlanningProvider>
+                </NameProvider>
+              </AppointmentProvider>
             </BabyGearProvider>
           </BudgetProvider>
         </InspirationProvider>
