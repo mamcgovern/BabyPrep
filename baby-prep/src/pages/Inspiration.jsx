@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useInspiration } from '../context/InspirationContext';
 
 const boards = [
+  'All',
   'Nursery',
   'Baby Gear',
   'Baby Clothes',
@@ -25,25 +26,43 @@ function InspirationModal({
   isOpen,
   onClose,
   onSave,
-  initialData,
+  editingItem,
   saving,
 }) {
-  const [formData, setFormData] = useState(initialData || emptyForm);
-
-  const isEditing = Boolean(initialData?.id);
+  const [form, setForm] = useState(
+    editingItem
+      ? {
+          title: editingItem.title || '',
+          board: editingItem.board || 'Nursery',
+          imageUrl: editingItem.imageUrl || '',
+          url: editingItem.url || '',
+          notes: editingItem.notes || '',
+          addedBy: editingItem.addedBy || 'Maddie',
+          favorite: editingItem.favorite || false,
+        }
+      : emptyForm
+  );
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
-    setFormData((current) => ({
-      ...current,
+    setForm((currentForm) => ({
+      ...currentForm,
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    await onSave(formData);
+
+    if (!form.title.trim()) {
+      return;
+    }
+
+    await onSave({
+      ...form,
+      title: form.title.trim(),
+    });
   };
 
   if (!isOpen) {
@@ -51,17 +70,28 @@ function InspirationModal({
   }
 
   return (
-    <div className="inspiration-modal-overlay" onMouseDown={onClose}>
+    <div
+      className="inspiration-modal-overlay"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
         className="inspiration-modal"
-        onMouseDown={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="inspiration-modal-title"
       >
         <div className="inspiration-modal-header">
           <div>
             <p className="inspiration-modal-eyebrow">
-              {isEditing ? 'UPDATE IDEA' : 'SAVE AN IDEA'}
+              {editingItem ? 'UPDATE IDEA' : 'SAVE AN IDEA'}
             </p>
-            <h2>{isEditing ? 'Edit Inspiration' : 'Add Inspiration'}</h2>
+            <h2 id="inspiration-modal-title">
+              {editingItem ? 'Edit Inspiration' : 'Add Inspiration'}
+            </h2>
           </div>
 
           <button
@@ -81,9 +111,10 @@ function InspirationModal({
               <input
                 type="text"
                 name="title"
-                value={formData.title}
+                value={form.title}
                 onChange={handleChange}
-                placeholder="e.g. Soft sage nursery"
+                placeholder="e.g. Sage green nursery"
+                autoFocus
                 required
               />
             </label>
@@ -92,14 +123,16 @@ function InspirationModal({
               <span>Board</span>
               <select
                 name="board"
-                value={formData.board}
+                value={form.board}
                 onChange={handleChange}
               >
-                {boards.map((board) => (
-                  <option key={board} value={board}>
-                    {board}
-                  </option>
-                ))}
+                {boards
+                  .filter((board) => board !== 'All')
+                  .map((board) => (
+                    <option key={board} value={board}>
+                      {board}
+                    </option>
+                  ))}
               </select>
             </label>
 
@@ -107,11 +140,12 @@ function InspirationModal({
               <span>Added by</span>
               <select
                 name="addedBy"
-                value={formData.addedBy}
+                value={form.addedBy}
                 onChange={handleChange}
               >
                 <option value="Maddie">Maddie</option>
                 <option value="Nick">Nick</option>
+                <option value="Both">Both</option>
               </select>
             </label>
 
@@ -120,13 +154,12 @@ function InspirationModal({
               <input
                 type="url"
                 name="imageUrl"
-                value={formData.imageUrl}
+                value={form.imageUrl}
                 onChange={handleChange}
                 placeholder="https://..."
               />
               <small>
-                Use a direct image URL if you want the image to appear on the
-                card.
+                Paste the direct URL to an image you want to save.
               </small>
             </label>
 
@@ -135,12 +168,13 @@ function InspirationModal({
               <input
                 type="url"
                 name="url"
-                value={formData.url}
+                value={form.url}
                 onChange={handleChange}
                 placeholder="https://..."
               />
               <small>
-                Where did you find this idea?
+                Add the webpage, Pinterest pin, product, or post where you
+                found it.
               </small>
             </label>
 
@@ -148,10 +182,9 @@ function InspirationModal({
               <span>Notes</span>
               <textarea
                 name="notes"
-                value={formData.notes}
+                value={form.notes}
                 onChange={handleChange}
                 placeholder="What do we like about this?"
-                rows="4"
               />
             </label>
           </div>
@@ -160,10 +193,10 @@ function InspirationModal({
             <input
               type="checkbox"
               name="favorite"
-              checked={formData.favorite}
+              checked={form.favorite}
               onChange={handleChange}
             />
-            <span>Favorite this idea</span>
+            <span>Mark as a favorite</span>
           </label>
 
           <div className="inspiration-modal-actions">
@@ -179,11 +212,11 @@ function InspirationModal({
             <button
               type="submit"
               className="primary-button"
-              disabled={saving}
+              disabled={saving || !form.title.trim()}
             >
               {saving
                 ? 'Saving...'
-                : isEditing
+                : editingItem
                   ? 'Save Changes'
                   : 'Add Inspiration'}
             </button>
@@ -247,7 +280,8 @@ function Inspiration() {
         await addInspiration(formData);
       }
 
-      closeModal();
+      setModalOpen(false);
+      setEditingItem(null);
     } catch (saveError) {
       console.error('Error saving inspiration:', saveError);
     } finally {
@@ -304,15 +338,6 @@ function Inspiration() {
       </div>
 
       <div className="board-pills">
-        <button
-          className={`filter-pill ${
-            activeBoard === 'All' ? 'active' : ''
-          }`}
-          onClick={() => setActiveBoard('All')}
-        >
-          All
-        </button>
-
         {boards.map((board) => (
           <button
             key={board}
@@ -327,7 +352,7 @@ function Inspiration() {
       </div>
 
       {loading && (
-        <div className="inspiration-empty-state">
+        <div className="empty-state">
           <p>Loading inspiration...</p>
         </div>
       )}
@@ -339,8 +364,8 @@ function Inspiration() {
       )}
 
       {!loading && !error && filteredItems.length === 0 && (
-        <div className="inspiration-empty-state">
-          <div className="inspiration-empty-icon">♡</div>
+        <div className="empty-state">
+          <div className="empty-state-icon">♡</div>
           <h2>Nothing here yet</h2>
           <p>
             Start saving ideas you love and they'll show up here.
@@ -372,7 +397,7 @@ function Inspiration() {
               ) : (
                 <div className="inspiration-no-image">
                   <span>♡</span>
-                  <p>No image</p>
+                  <p>No image added</p>
                 </div>
               )}
 
@@ -398,21 +423,20 @@ function Inspiration() {
                 )}
 
                 <div className="inspiration-card-footer">
-                  {item.url ? (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inspiration-source-link"
-                    >
-                      View source ↗
-                    </a>
-                  ) : (
-                    <span />
-                  )}
-
                   <div className="inspiration-card-actions">
+                    {item.url && (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inspiration-source-link"
+                      >
+                        View source ↗
+                      </a>
+                    )}
+
                     <button
+                      type="button"
                       className="inspiration-action-button"
                       onClick={() => openEditModal(item)}
                     >
@@ -420,6 +444,7 @@ function Inspiration() {
                     </button>
 
                     <button
+                      type="button"
                       className="inspiration-action-button"
                       onClick={() => handleDelete(item)}
                     >
@@ -437,7 +462,7 @@ function Inspiration() {
         isOpen={modalOpen}
         onClose={closeModal}
         onSave={handleSave}
-        initialData={editingItem}
+        editingItem={editingItem}
         saving={saving}
       />
     </div>

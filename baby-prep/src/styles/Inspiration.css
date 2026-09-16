@@ -1,0 +1,367 @@
+.inspiration-page {
+  position: relative;
+}
+
+.inspiration-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.board-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.inspiration-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.inspiration-card {
+  overflow: hidden;
+  background: var(--color-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.inspiration-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.inspiration-image-wrapper {
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+.inspiration-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.inspiration-no-image {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-pink-pale);
+  color: var(--color-pink);
+}
+
+.inspiration-no-image span {
+  font-size: 30px;
+}
+
+.inspiration-no-image p {
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+
+.inspiration-card-content {
+  padding: 14px;
+}
+
+.inspiration-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.inspiration-board {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+}
+
+.inspiration-favorite {
+  color: var(--color-pink);
+  font-size: 13px;
+}
+
+.inspiration-card h2 {
+  margin: 0 0 7px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.inspiration-notes {
+  margin: 0;
+  color: var(--color-text-light);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.inspiration-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.inspiration-source-link {
+  color: var(--color-text);
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inspiration-source-link:hover {
+  color: var(--color-pink);
+}
+
+.inspiration-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inspiration-action-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.inspiration-action-button:hover {
+  color: var(--color-text);
+}
+
+.inspiration-empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--color-white);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.inspiration-empty-state h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.inspiration-empty-state p {
+  margin: 0 0 18px;
+  color: var(--color-text-light);
+  font-size: 12px;
+}
+
+.inspiration-empty-icon {
+  margin-bottom: 10px;
+  color: var(--color-pink);
+  font-size: 28px;
+}
+
+.inspiration-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(60, 55, 55, 0.35);
+}
+
+.inspiration-modal {
+  width: min(620px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: var(--color-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(60, 55, 55, 0.15);
+}
+
+.inspiration-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.inspiration-modal-eyebrow {
+  margin: 0 0 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-light);
+}
+
+.inspiration-modal-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.inspiration-modal-close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: var(--color-background);
+  border-radius: 50%;
+  color: var(--color-text-light);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.inspiration-modal-close:hover {
+  background: var(--color-pink-pale);
+  color: var(--color-text);
+}
+
+.inspiration-modal form {
+  padding: 22px 24px 24px;
+}
+
+.inspiration-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.inspiration-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspiration-form-field-full {
+  grid-column: 1 / -1;
+}
+
+.inspiration-form-field span {
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.inspiration-form-field input,
+.inspiration-form-field select,
+.inspiration-form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inspiration-form-field input:focus,
+.inspiration-form-field select:focus,
+.inspiration-form-field textarea:focus {
+  border-color: var(--color-pink);
+  box-shadow: 0 0 0 3px var(--color-pink-pale);
+}
+
+.inspiration-form-field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.inspiration-form-field small {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.inspiration-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--color-text);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.inspiration-checkbox input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-pink);
+}
+
+.inspiration-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.inspiration-modal-actions .secondary-button,
+.inspiration-modal-actions .primary-button {
+  min-width: 110px;
+}
+
+@media (max-width: 900px) {
+  .inspiration-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .inspiration-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .inspiration-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inspiration-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inspiration-form-field-full {
+    grid-column: auto;
+  }
+
+  .inspiration-modal-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .inspiration-modal {
+    max-height: calc(100vh - 24px);
+  }
+
+  .inspiration-modal-header,
+  .inspiration-modal form {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}

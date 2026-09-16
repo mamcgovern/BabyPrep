@@ -3,9 +3,12 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Tasks from './pages/Tasks';
 import Resources from './pages/Resources';
+import Inspiration from './pages/Inspiration';
+
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
 import { ResourceProvider } from './context/ResourceContext';
+import { InspirationProvider } from './context/InspirationContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -123,15 +126,7 @@ function AppShell() {
             }
           />
 
-          <Route
-            path="/inspiration"
-            element={
-              <PlaceholderPage
-                title="Inspiration"
-                description="A shared place for nursery ideas, baby gear, names, and anything else that inspires you."
-              />
-            }
-          />
+          <Route path="/inspiration" element={<Inspiration />} />
 
           <Route
             path="/planning"
@@ -226,7 +221,9 @@ function ProtectedApp() {
   return (
     <TaskProvider>
       <ResourceProvider>
-        <AppShell />
+        <InspirationProvider>
+          <AppShell />
+        </InspirationProvider>
       </ResourceProvider>
     </TaskProvider>
   );
