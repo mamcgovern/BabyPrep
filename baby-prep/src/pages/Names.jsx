@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   nameGenders,
   nameRatings,
@@ -49,6 +49,183 @@ function getRatingClass(rating) {
   return rating?.toLowerCase().replace(/\s+/g, '-') || 'no-opinion';
 }
 
+function ThemePicker({ themes, selectedThemes, onToggle }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        pickerRef.current &&
+        !pickerRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener(
+        'mousedown',
+        handleClickOutside
+      );
+    };
+  }, [open]);
+
+  const filteredThemes = useMemo(() => {
+    const searchTerm = search.trim().toLowerCase();
+
+    if (!searchTerm) {
+      return themes;
+    }
+
+    return themes.filter((theme) =>
+      theme.toLowerCase().includes(searchTerm)
+    );
+  }, [themes, search]);
+
+  const clearThemes = () => {
+    selectedThemes.forEach((theme) => onToggle(theme));
+  };
+
+  return (
+    <div className="theme-picker-wrapper" ref={pickerRef}>
+      <button
+        type="button"
+        className={`theme-picker-trigger ${
+          open ? 'open' : ''
+        }`}
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <div className="theme-picker-trigger-content">
+          {selectedThemes.length === 0 ? (
+            <span className="theme-picker-placeholder">
+              Select themes...
+            </span>
+          ) : (
+            <div className="theme-picker-selected">
+              {selectedThemes.slice(0, 3).map((theme) => (
+                <span key={theme} className="theme-picker-chip">
+                  {theme}
+                </span>
+              ))}
+
+              {selectedThemes.length > 3 && (
+                <span className="theme-picker-more">
+                  +{selectedThemes.length - 3} more
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <span className="theme-picker-chevron">
+          {open ? '⌃' : '⌄'}
+        </span>
+      </button>
+
+      {open && (
+        <div className="theme-picker-popover">
+          <div className="theme-picker-popover-header">
+            <div>
+              <strong>Select themes</strong>
+
+              <span>
+                {selectedThemes.length === 0
+                  ? 'Choose one or more'
+                  : `${selectedThemes.length} selected`}
+              </span>
+            </div>
+
+            {selectedThemes.length > 0 && (
+              <button
+                type="button"
+                className="theme-picker-clear"
+                onClick={clearThemes}
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+
+          {themes.length > 5 && (
+            <div className="theme-picker-search">
+              <span>⌕</span>
+
+              <input
+                type="search"
+                value={search}
+                onChange={(event) =>
+                  setSearch(event.target.value)
+                }
+                placeholder="Search themes..."
+                autoFocus
+              />
+            </div>
+          )}
+
+          <div className="theme-picker-options">
+            {filteredThemes.length === 0 ? (
+              <div className="theme-picker-empty">
+                No themes match your search.
+              </div>
+            ) : (
+              filteredThemes.map((theme) => {
+                const selected =
+                  selectedThemes.includes(theme);
+
+                return (
+                  <button
+                    key={theme}
+                    type="button"
+                    className={`theme-picker-option ${
+                      selected ? 'selected' : ''
+                    }`}
+                    onClick={() => onToggle(theme)}
+                  >
+                    <span
+                      className={`theme-picker-checkbox ${
+                        selected ? 'checked' : ''
+                      }`}
+                    >
+                      {selected ? '✓' : ''}
+                    </span>
+
+                    <span className="theme-picker-option-name">
+                      {theme}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {selectedThemes.length > 0 && (
+            <div className="theme-picker-footer">
+              <button
+                type="button"
+                className="theme-picker-done"
+                onClick={() => {
+                  setOpen(false);
+                  setSearch('');
+                }}
+              >
+                Done
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function NameModal({ name, onClose }) {
   const { addName, updateName, themes } = useNames();
 
@@ -78,7 +255,8 @@ function NameModal({ name, onClose }) {
   const [formError, setFormError] = useState('');
 
   const handleChange = (event) => {
-    const { name: fieldName, value, type, checked } = event.target;
+    const { name: fieldName, value, type, checked } =
+      event.target;
 
     setForm((current) => ({
       ...current,
@@ -137,7 +315,9 @@ function NameModal({ name, onClose }) {
       onClose();
     } catch (error) {
       console.error('Error saving name:', error);
-      setFormError('We could not save this name. Please try again.');
+      setFormError(
+        'We could not save this name. Please try again.'
+      );
     } finally {
       setSaving(false);
     }
@@ -154,7 +334,9 @@ function NameModal({ name, onClose }) {
             <p className="eyebrow">
               {name ? 'EDIT NAME' : 'ADD NAME'}
             </p>
-            <h2>{name ? 'Edit baby name' : 'Add a baby name'}</h2>
+            <h2>
+              {name ? 'Edit baby name' : 'Add a baby name'}
+            </h2>
           </div>
 
           <button
@@ -168,15 +350,14 @@ function NameModal({ name, onClose }) {
         </div>
 
         {formError && (
-          <div className="form-error">
-            {formError}
-          </div>
+          <div className="form-error">{formError}</div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <label className="form-field form-field-full">
               <span>First name</span>
+
               <input
                 type="text"
                 name="name"
@@ -189,6 +370,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field">
               <span>Gender</span>
+
               <select
                 name="gender"
                 value={form.gender}
@@ -205,28 +387,11 @@ function NameModal({ name, onClose }) {
             <div className="form-field form-field-full">
               <span>Themes</span>
 
-              <div className="theme-picker">
-                {themes.map((theme) => {
-                  const selected = form.themes.includes(theme);
-
-                  return (
-                    <button
-                      key={theme}
-                      type="button"
-                      className={`theme-option ${
-                        selected ? 'selected' : ''
-                      }`}
-                      onClick={() => toggleTheme(theme)}
-                    >
-                      <span className="theme-option-check">
-                        {selected ? '✓' : ''}
-                      </span>
-
-                      <span>{theme}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <ThemePicker
+                themes={themes}
+                selectedThemes={form.themes}
+                onToggle={toggleTheme}
+              />
 
               {form.themes.length > 0 && (
                 <div className="selected-theme-summary">
@@ -239,14 +404,15 @@ function NameModal({ name, onClose }) {
 
               {themes.length === 0 && (
                 <small>
-                  Add themes from Settings before assigning them
-                  to names.
+                  Add themes from Settings before assigning
+                  them to names.
                 </small>
               )}
             </div>
 
             <label className="form-field">
               <span>Status</span>
+
               <select
                 name="status"
                 value={form.status}
@@ -262,6 +428,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field">
               <span>Maddie's rating</span>
+
               <select
                 name="maddieRating"
                 value={form.maddieRating}
@@ -277,6 +444,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field">
               <span>Nick's rating</span>
+
               <select
                 name="nickRating"
                 value={form.nickRating}
@@ -292,6 +460,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field form-field-full">
               <span>Middle name ideas</span>
+
               <input
                 type="text"
                 name="middleNames"
@@ -299,11 +468,15 @@ function NameModal({ name, onClose }) {
                 onChange={handleChange}
                 placeholder="James, Nicholas, William"
               />
-              <small>Separate multiple names with commas.</small>
+
+              <small>
+                Separate multiple names with commas.
+              </small>
             </label>
 
             <label className="form-field form-field-full">
               <span>Nicknames</span>
+
               <input
                 type="text"
                 name="nicknames"
@@ -315,6 +488,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field form-field-full">
               <span>Meaning / origin</span>
+
               <input
                 type="text"
                 name="meaning"
@@ -326,6 +500,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field form-field-full">
               <span>Maddie's notes</span>
+
               <textarea
                 name="maddieNotes"
                 value={form.maddieNotes}
@@ -337,6 +512,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field form-field-full">
               <span>Nick's notes</span>
+
               <textarea
                 name="nickNotes"
                 value={form.nickNotes}
@@ -348,6 +524,7 @@ function NameModal({ name, onClose }) {
 
             <label className="form-field form-field-full">
               <span>Our notes</span>
+
               <textarea
                 name="notes"
                 value={form.notes}
@@ -364,6 +541,7 @@ function NameModal({ name, onClose }) {
                 checked={form.favorite}
                 onChange={handleChange}
               />
+
               <span>Save as one of our favorites</span>
             </label>
           </div>
