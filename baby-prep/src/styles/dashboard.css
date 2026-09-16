@@ -8,10 +8,8 @@
 .countdown-card {
   min-height: 170px;
   padding: 26px 28px;
-
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-
   background: var(--color-white);
   box-shadow: var(--shadow-card);
 }
@@ -57,10 +55,8 @@
 .dashboard-card {
   min-height: 205px;
   padding: 25px 27px;
-
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-
   background: var(--color-white);
   box-shadow: var(--shadow-card);
 }
@@ -100,9 +96,7 @@
   height: 7px;
   margin: 28px 0 9px;
   overflow: hidden;
-
   border-radius: 20px;
-
   background: var(--color-pink-light);
 }
 
@@ -128,7 +122,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-
   color: var(--color-text-muted);
   font-size: 12px;
 }
@@ -148,15 +141,11 @@
 .resource-icon {
   display: grid;
   place-items: center;
-
   width: 43px;
   height: 43px;
-
   border-radius: 8px;
-
   background: var(--color-blue-light);
   color: #7698ab;
-
   font-size: 19px;
 }
 
