@@ -1,0 +1,35 @@
+:root {
+  --color-pink: #e9b8c2;
+  --color-pink-light: #f7e3e6;
+  --color-pink-pale: #fcf2f3;
+  --color-blue: #a9c9dc;
+  --color-blue-light: #dcebf3;
+  --color-blue-pale: #f1f7fa;
+
+  --color-lavender: #c9c1d9;
+  --color-lavender-light: #eeeaf3;
+
+  --color-cream: #fdfaf6;
+  --color-white: #ffffff;
+  --color-background: #f8f6f3;
+
+  --color-text: #4a4a4a;
+  --color-text-light: #858585;
+  --color-text-muted: #a5a5a5;
+
+  --color-border: #e8e3df;
+  --color-border-light: #eeeae6;
+
+  --color-success: #a9c7b1;
+  --color-warning: #e7c58a;
+
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Playfair Display', serif;
+
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-card: 0 2px 8px rgba(80, 70, 70, 0.05);
+  --shadow-hover: 0 4px 14px rgba(80, 70, 70, 0.08);
+}

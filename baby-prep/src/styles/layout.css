@@ -1,0 +1,103 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.main-content {
+  width: calc(100% - 255px);
+  min-height: 100vh;
+  margin-left: 255px;
+}
+
+.page {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 48px 50px 70px;
+}
+
+.page-header {
+  margin-bottom: 35px;
+}
+
+.page-header h1 {
+  margin-bottom: 10px;
+}
+
+.welcome {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 36px;
+}
+
+.eyebrow {
+  margin-bottom: 9px;
+  color: var(--color-pink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+
+h1 {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.page-description {
+  max-width: 600px;
+  margin-bottom: 0;
+  color: var(--color-text-light);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.primary-button {
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  background: var(--color-pink);
+  color: var(--color-white);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.primary-button:hover {
+  background: #dda8b3;
+  transform: translateY(-1px);
+}
+
+.empty-state {
+  padding: 80px 30px;
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.empty-state-icon {
+  margin-bottom: 14px;
+  color: var(--color-pink);
+  font-size: 25px;
+}
+
+.empty-state h2 {
+  margin-bottom: 8px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.empty-state p {
+  max-width: 450px;
+  margin: 0 auto;
+  color: var(--color-text-light);
+  font-size: 12px;
+  line-height: 1.6;
+}
