@@ -663,3 +663,74 @@
     padding-right: 18px;
   }
 }
+
+.gear-field-help {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.baby-gear-budget {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 13px;
+  padding: 10px;
+  background: var(--color-blue-pale);
+  border-radius: var(--radius-sm);
+}
+
+.baby-gear-budget > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.baby-gear-budget-label {
+  color: var(--color-text-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.baby-gear-budget-connected,
+.baby-gear-budget-unconnected {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.baby-gear-budget-connected {
+  color: #67806f;
+}
+
+.baby-gear-budget-unconnected {
+  color: var(--color-text-light);
+}
+
+.baby-gear-budget-button {
+  padding: 6px 9px;
+  border: 1px solid var(--color-blue);
+  background: var(--color-white);
+  border-radius: var(--radius-sm);
+  color: #64859a;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.baby-gear-budget-button:hover {
+  background: var(--color-blue-light);
+}
+
+.baby-gear-budget-button.connected {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.baby-gear-budget-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

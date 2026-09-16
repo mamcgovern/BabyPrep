@@ -197,19 +197,19 @@ function ProtectedApp() {
   }
 
   return (
-    <TaskProvider>
-      <ResourceProvider>
-        <InspirationProvider>
-          <BabyGearProvider>
-            <PlanningProvider>
-              <BudgetProvider>
+    <BudgetProvider>
+      <TaskProvider>
+        <ResourceProvider>
+          <InspirationProvider>
+            <BabyGearProvider>
+              <PlanningProvider>
                 <AppShell />
-              </BudgetProvider>
-            </PlanningProvider>
-          </BabyGearProvider>
-        </InspirationProvider>
-      </ResourceProvider>
-    </TaskProvider>
+              </PlanningProvider>
+            </BabyGearProvider>
+          </InspirationProvider>
+        </ResourceProvider>
+      </TaskProvider>
+    </BudgetProvider>
   );
 }
 

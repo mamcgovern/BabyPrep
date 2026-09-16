@@ -10,6 +10,7 @@ import {
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { db } from '../services/firebase';
 import { FAMILY_ID } from '../config/baby';
+import { useBudget } from './BudgetContext';
 
 const BabyGearContext = createContext(null);
 
@@ -53,6 +54,8 @@ export const gearStatuses = [
 ];
 
 export function BabyGearProvider({ children }) {
+  const { addFromBabyGear, updateBudgetItem, deleteBudgetItem } = useBudget();
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -81,21 +84,78 @@ export function BabyGearProvider({ children }) {
   }, []);
 
   const addGear = async (gearData) => {
-    await addDoc(gearCollection, {
+    const gearDoc = await addDoc(gearCollection, {
       ...gearData,
+      price:
+        gearData.price === '' || gearData.price == null
+          ? null
+          : Number(gearData.price),
+      budgetItemId: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+
+    return gearDoc.id;
   };
 
   const updateGear = async (gearId, gearData) => {
+    const existingItem = items.find((item) => item.id === gearId);
+
+    const updatedPrice =
+      gearData.price === '' || gearData.price == null
+        ? null
+        : Number(gearData.price);
+
     await updateDoc(doc(gearCollection, gearId), {
       ...gearData,
+      price: updatedPrice,
+      updatedAt: serverTimestamp(),
+    });
+
+    if (existingItem?.budgetItemId) {
+      await updateBudgetItem(existingItem.budgetItemId, {
+        plannedAmount: updatedPrice || 0,
+        name: gearData.name || existingItem.name,
+        sourceName: gearData.name || existingItem.name,
+      });
+    }
+  };
+
+  const addToBudget = async (gearItem) => {
+    if (gearItem.budgetItemId) {
+      return gearItem.budgetItemId;
+    }
+
+    const budgetItemId = await addFromBabyGear(gearItem);
+
+    await updateDoc(doc(gearCollection, gearItem.id), {
+      budgetItemId,
+      updatedAt: serverTimestamp(),
+    });
+
+    return budgetItemId;
+  };
+
+  const removeFromBudget = async (gearItem) => {
+    if (!gearItem?.budgetItemId) {
+      return;
+    }
+
+    await deleteBudgetItem(gearItem.budgetItemId);
+
+    await updateDoc(doc(gearCollection, gearItem.id), {
+      budgetItemId: null,
       updatedAt: serverTimestamp(),
     });
   };
 
-  const deleteGear = async (gearId) => {
+  const deleteGear = async (gearId, deleteConnectedBudget = false) => {
+    const existingItem = items.find((item) => item.id === gearId);
+
+    if (deleteConnectedBudget && existingItem?.budgetItemId) {
+      await deleteBudgetItem(existingItem.budgetItemId);
+    }
+
     await deleteDoc(doc(gearCollection, gearId));
   };
 
@@ -116,6 +176,8 @@ export function BabyGearProvider({ children }) {
         addGear,
         updateGear,
         deleteGear,
+        addToBudget,
+        removeFromBudget,
       }}
     >
       {children}

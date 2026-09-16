@@ -87,7 +87,12 @@ function GearModal({
         },
       });
     } else {
-      setForm(emptyForm);
+      setForm({
+        ...emptyForm,
+        comparisonFields: {
+          ...emptyForm.comparisonFields,
+        },
+      });
     }
   }, [isOpen, editingItem]);
 
@@ -222,6 +227,9 @@ function GearModal({
                   placeholder="0.00"
                 />
               </div>
+              <small className="gear-field-help">
+                This becomes the planned Budget amount if you add it to Budget.
+              </small>
             </label>
 
             <label className="gear-form-field">
@@ -575,6 +583,8 @@ function BabyGear() {
     addGear,
     updateGear,
     deleteGear,
+    addToBudget,
+    removeFromBudget,
   } = useBabyGear();
 
   const [activeCategory, setActiveCategory] = useState('All');
@@ -584,6 +594,7 @@ function BabyGear() {
   const [editingItem, setEditingItem] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [budgetActionId, setBudgetActionId] = useState(null);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -634,13 +645,48 @@ function BabyGear() {
     }
   };
 
+  const handleBudgetToggle = async (item) => {
+    setBudgetActionId(item.id);
+
+    try {
+      if (item.budgetItemId) {
+        const shouldRemove = window.confirm(
+          `Remove "${item.name}" from your Budget?\n\nThe Baby Gear item will stay here.`
+        );
+
+        if (shouldRemove) {
+          await removeFromBudget(item);
+        }
+      } else {
+        await addToBudget(item);
+      }
+    } catch (budgetError) {
+      console.error('Error updating baby gear budget connection:', budgetError);
+    } finally {
+      setBudgetActionId(null);
+    }
+  };
+
   const handleDelete = async (item) => {
-    if (!window.confirm(`Delete "${item.name}"?`)) {
+    let deleteConnectedBudget = false;
+
+    if (item.budgetItemId) {
+      const shouldDeleteBudget = window.confirm(
+        `"${item.name}" is connected to your Budget.\n\nClick OK to delete both the Baby Gear item and its planned Budget item. Click Cancel to keep both.`
+      );
+
+      if (!shouldDeleteBudget) {
+        return;
+      }
+
+      deleteConnectedBudget = true;
+    } else if (!window.confirm(`Delete "${item.name}"?`)) {
       return;
     }
 
     try {
-      await deleteGear(item.id);
+      await deleteGear(item.id, deleteConnectedBudget);
+
       setSelectedItems((current) =>
         current.filter((id) => id !== item.id)
       );
@@ -809,6 +855,7 @@ function BabyGear() {
         <div className="baby-gear-grid">
           {filteredItems.map((item) => {
             const isSelected = selectedItems.includes(item.id);
+            const budgetLoading = budgetActionId === item.id;
 
             return (
               <article
@@ -911,6 +958,41 @@ function BabyGear() {
                       {item.notes}
                     </p>
                   )}
+
+                  <div className="baby-gear-budget">
+                    <div>
+                      <span className="baby-gear-budget-label">
+                        Budget
+                      </span>
+
+                      {item.budgetItemId ? (
+                        <span className="baby-gear-budget-connected">
+                          ✓ Added to Budget
+                        </span>
+                      ) : (
+                        <span className="baby-gear-budget-unconnected">
+                          Not in Budget
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      className={
+                        item.budgetItemId
+                          ? 'baby-gear-budget-button connected'
+                          : 'baby-gear-budget-button'
+                      }
+                      onClick={() => handleBudgetToggle(item)}
+                      disabled={budgetLoading}
+                    >
+                      {budgetLoading
+                        ? 'Saving...'
+                        : item.budgetItemId
+                          ? 'Remove'
+                          : '+ Add to Budget'}
+                    </button>
+                  </div>
 
                   <div className="baby-gear-card-footer">
                     <div className="baby-gear-card-actions">

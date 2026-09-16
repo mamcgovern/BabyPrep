@@ -23,27 +23,19 @@ const budgetCollection = collection(
 export const budgetCategories = [
   'Baby Gear',
   'Nursery',
-  'Medical',
-  'Childcare',
-  'Classes',
   'Clothing',
-  'Feeding',
   'Diapering',
-  'Work & Leave',
-  'Miscellaneous',
+  'Feeding',
+  'Childcare',
+  'Medical',
+  'Classes & Education',
+  'Appointments',
+  'Other',
 ];
 
 export const budgetStatuses = [
-  'Planning',
+  'Planned',
   'Purchased',
-  'Paid',
-  'Skip',
-];
-
-export const budgetPayers = [
-  'Maddie',
-  'Nick',
-  'Shared',
 ];
 
 function sortBudgetItems(items) {
@@ -74,7 +66,7 @@ export function BudgetProvider({ children }) {
         setError('');
       },
       (snapshotError) => {
-        console.error('Error loading budget items:', snapshotError);
+        console.error('Error loading budget:', snapshotError);
         setLoading(false);
         setError('We could not load your budget.');
       }
@@ -83,61 +75,102 @@ export function BudgetProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
-  const addBudgetItem = async (itemData) => {
-    await addDoc(budgetCollection, {
-      ...itemData,
-      plannedAmount: Number(itemData.plannedAmount) || 0,
-      actualAmount: Number(itemData.actualAmount) || 0,
+  const addBudgetItem = async (budgetData) => {
+    const budgetDoc = await addDoc(budgetCollection, {
+      name: budgetData.name || '',
+      category: budgetData.category || 'Other',
+      plannedAmount: Number(budgetData.plannedAmount) || 0,
+      actualAmount:
+        budgetData.actualAmount === '' ||
+        budgetData.actualAmount == null
+          ? null
+          : Number(budgetData.actualAmount),
+      status: budgetData.status || 'Planned',
+      notes: budgetData.notes || '',
+      sourceType: budgetData.sourceType || 'manual',
+      sourceId: budgetData.sourceId || null,
+      sourceName: budgetData.sourceName || null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+
+    return budgetDoc.id;
   };
 
-  const updateBudgetItem = async (itemId, itemData) => {
-    await updateDoc(doc(budgetCollection, itemId), {
-      ...itemData,
-      plannedAmount: Number(itemData.plannedAmount) || 0,
-      actualAmount: Number(itemData.actualAmount) || 0,
+  const updateBudgetItem = async (budgetId, budgetData) => {
+    await updateDoc(doc(budgetCollection, budgetId), {
+      ...budgetData,
       updatedAt: serverTimestamp(),
     });
   };
 
-  const deleteBudgetItem = async (itemId) => {
-    await deleteDoc(doc(budgetCollection, itemId));
+  const deleteBudgetItem = async (budgetId) => {
+    await deleteDoc(doc(budgetCollection, budgetId));
   };
 
-  const stats = useMemo(() => {
+  const addFromBabyGear = async (gearItem) => {
+    if (!gearItem?.id) {
+      throw new Error('Baby gear item is missing an ID.');
+    }
+
+    if (gearItem.budgetItemId) {
+      return gearItem.budgetItemId;
+    }
+
+    const budgetId = await addBudgetItem({
+      name: gearItem.name,
+      category: 'Baby Gear',
+      plannedAmount: gearItem.price,
+      actualAmount: null,
+      status: 'Planned',
+      notes: gearItem.notes || '',
+      sourceType: 'babyGear',
+      sourceId: gearItem.id,
+      sourceName: gearItem.name,
+    });
+
+    return budgetId;
+  };
+
+  const totals = useMemo(() => {
     const planned = items.reduce(
       (total, item) => total + (Number(item.plannedAmount) || 0),
       0
     );
 
-    const spent = items.reduce(
+    const actual = items.reduce(
       (total, item) => total + (Number(item.actualAmount) || 0),
       0
     );
 
+    const remaining = Math.max(planned - actual, 0);
+
     return {
       planned,
-      spent,
-      remaining: planned - spent,
-      items: items.length,
-      purchased: items.filter(
-        (item) => item.status === 'Purchased' || item.status === 'Paid'
-      ).length,
+      actual,
+      remaining,
     };
   }, [items]);
+
+  const stats = useMemo(() => ({
+    total: items.length,
+    planned: items.filter((item) => item.status !== 'Purchased').length,
+    purchased: items.filter((item) => item.status === 'Purchased').length,
+    fromBabyGear: items.filter((item) => item.sourceType === 'babyGear').length,
+  }), [items]);
 
   return (
     <BudgetContext.Provider
       value={{
         items,
+        totals,
         stats,
         loading,
         error,
         addBudgetItem,
         updateBudgetItem,
         deleteBudgetItem,
+        addFromBabyGear,
       }}
     >
       {children}
