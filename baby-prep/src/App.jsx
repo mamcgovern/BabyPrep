@@ -6,6 +6,7 @@ import Resources from './pages/Resources';
 import Inspiration from './pages/Inspiration';
 import BabyGear from './pages/BabyGear';
 import Planning from './pages/Planning';
+import Budget from './pages/Budget';
 
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
@@ -13,6 +14,7 @@ import { ResourceProvider } from './context/ResourceContext';
 import { InspirationProvider } from './context/InspirationContext';
 import { BabyGearProvider } from './context/BabyGearContext';
 import { PlanningProvider } from './context/PlanningContext';
+import { BudgetProvider } from './context/BudgetContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -119,22 +121,10 @@ function AppShell() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/resources" element={<Resources />} />
-
           <Route path="/baby-gear" element={<BabyGear />} />
-
           <Route path="/inspiration" element={<Inspiration />} />
-
           <Route path="/planning" element={<Planning />} />
-
-          <Route
-            path="/budget"
-            element={
-              <PlaceholderPage
-                title="Budget"
-                description="Plan for the costs that come with getting ready for baby."
-              />
-            }
-          />
+          <Route path="/budget" element={<Budget />} />
 
           <Route
             path="/appointments"
@@ -212,7 +202,9 @@ function ProtectedApp() {
         <InspirationProvider>
           <BabyGearProvider>
             <PlanningProvider>
-              <AppShell />
+              <BudgetProvider>
+                <AppShell />
+              </BudgetProvider>
             </PlanningProvider>
           </BabyGearProvider>
         </InspirationProvider>
