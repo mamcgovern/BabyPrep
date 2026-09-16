@@ -3,13 +3,11 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDocs,
+  getDoc,
   onSnapshot,
-  orderBy,
-  query,
   serverTimestamp,
+  setDoc,
   updateDoc,
-  writeBatch,
 } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { db } from '../services/firebase';
@@ -17,76 +15,76 @@ import { FAMILY_ID } from '../config/baby';
 
 const TaskContext = createContext(null);
 
-const initialTasks = [
+const starterTasks = [
   {
-    title: 'Talk about when we want to start trying',
+    id: 'starter-health-check',
+    title: 'Schedule a preconception health appointment',
     description:
-      'Talk through timing, goals, and anything we want to have in place first.',
-    phase: 'Before Trying',
-    assignedTo: 'Both',
-    dueDate: '',
-    priority: 'High',
-    status: 'Not Started',
-  },
-  {
-    title: 'Research prenatal vitamins',
-    description:
-      'Look into options and talk about what we want to take before trying.',
+      'Talk through overall health, medications, vitamins, and anything we should know before trying.',
     phase: 'Before Trying',
     assignedTo: 'Maddie',
-    dueDate: '',
-    priority: 'Medium',
-    status: 'In Progress',
-  },
-  {
-    title: 'Review health insurance coverage',
-    description:
-      'Understand prenatal, delivery, hospital, and newborn coverage.',
-    phase: 'Before Trying',
-    assignedTo: 'Nick',
-    dueDate: '',
+    status: 'Not Started',
     priority: 'High',
-    status: 'Not Started',
   },
   {
-    title: 'Start researching childcare options',
+    id: 'starter-prenatal-vitamin',
+    title: 'Research prenatal vitamins',
     description:
-      'Make a list of daycares, in-home options, family care, and waitlist requirements.',
+      'Compare options and decide what we want to take before trying.',
+    phase: 'Before Trying',
+    assignedTo: 'Maddie',
+    status: 'Not Started',
+    priority: 'Medium',
+  },
+  {
+    id: 'starter-finances',
+    title: 'Review our finances',
+    description:
+      'Look at savings, monthly expenses, insurance, and what we want to have set aside.',
     phase: 'Before Trying',
     assignedTo: 'Both',
-    dueDate: '',
+    status: 'Not Started',
     priority: 'High',
-    status: 'Not Started',
   },
   {
-    title: 'Make a preliminary baby budget',
+    id: 'starter-childcare',
+    title: 'Research childcare options',
     description:
-      'Estimate one-time purchases, monthly costs, childcare, and savings goals.',
+      'Learn about daycare, waitlists, costs, availability, and what options are near us.',
     phase: 'Before Trying',
     assignedTo: 'Both',
-    dueDate: '',
-    priority: 'Medium',
     status: 'Not Started',
+    priority: 'High',
   },
   {
-    title: 'Make a list of questions for our doctors',
+    id: 'starter-parenting-books',
+    title: 'Choose a few parenting books to read',
     description:
-      'Write down anything we want to ask before we start trying.',
-    phase: 'Trying to Conceive',
+      'Find books that cover pregnancy, newborn care, parenting approaches, and what to expect.',
+    phase: 'Before Trying',
     assignedTo: 'Both',
-    dueDate: '',
-    priority: 'Medium',
     status: 'Not Started',
-  },
-  {
-    title: 'Research early pregnancy resources',
-    description:
-      'Find books, apps, classes, and trustworthy websites we want to use.',
-    phase: 'Pregnancy Prep',
-    assignedTo: 'Both',
-    dueDate: '',
     priority: 'Low',
+  },
+  {
+    id: 'starter-insurance',
+    title: 'Understand our health insurance',
+    description:
+      'Review maternity coverage, deductibles, out-of-pocket maximums, and adding a baby.',
+    phase: 'Before Trying',
+    assignedTo: 'Both',
     status: 'Not Started',
+    priority: 'Medium',
+  },
+  {
+    id: 'starter-work-benefits',
+    title: 'Review parental leave and work benefits',
+    description:
+      'Figure out parental leave, FMLA, short-term disability, and other available benefits.',
+    phase: 'Before Trying',
+    assignedTo: 'Both',
+    status: 'Not Started',
+    priority: 'Medium',
   },
 ];
 
@@ -97,128 +95,169 @@ const tasksCollection = collection(
   'tasks'
 );
 
-function TaskProvider({ children }) {
+const settingsRef = doc(
+  db,
+  'families',
+  FAMILY_ID,
+  'settings',
+  'app'
+);
+
+async function seedStarterTasks() {
+  const settingsSnapshot = await getDoc(settingsRef);
+
+  if (
+    settingsSnapshot.exists() &&
+    settingsSnapshot.data().tasksSeeded
+  ) {
+    return;
+  }
+
+  await Promise.all(
+    starterTasks.map(({ id, ...task }) =>
+      setDoc(doc(tasksCollection, id), {
+        ...task,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+    )
+  );
+
+  await setDoc(
+    settingsRef,
+    {
+      tasksSeeded: true,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+function sortTasks(taskList) {
+  return [...taskList].sort((a, b) => {
+    const aTime = a.createdAt?.toMillis?.() ?? 0;
+    const bTime = b.createdAt?.toMillis?.() ?? 0;
+
+    return aTime - bTime;
+  });
+}
+
+export function TaskProvider({ children }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const tasksQuery = query(
-      tasksCollection,
-      orderBy('createdAt', 'asc')
-    );
+    let unsubscribe;
 
-    const unsubscribe = onSnapshot(
-      tasksQuery,
-      async (snapshot) => {
-        if (snapshot.empty) {
-          try {
-            const batch = writeBatch(db);
+    const initializeTasks = async () => {
+      try {
+        const settingsSnapshot = await getDoc(settingsRef);
 
-            initialTasks.forEach((task) => {
-              const taskRef = doc(tasksCollection);
-
-              batch.set(taskRef, {
-                ...task,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-              });
-            });
-
-            await batch.commit();
-            return;
-          } catch (firebaseError) {
-            console.error('Error creating starter tasks:', firebaseError);
-            setError('We couldn’t create your starter tasks.');
-            setLoading(false);
-            return;
-          }
+        if (
+          !settingsSnapshot.exists() ||
+          !settingsSnapshot.data().tasksSeeded
+        ) {
+          await seedStarterTasks();
         }
 
-        const loadedTasks = snapshot.docs.map((taskDocument) => ({
-          id: taskDocument.id,
-          ...taskDocument.data(),
-        }));
+        unsubscribe = onSnapshot(
+          tasksCollection,
+          (snapshot) => {
+            const loadedTasks = snapshot.docs.map((taskDoc) => ({
+              id: taskDoc.id,
+              ...taskDoc.data(),
+            }));
 
-        setTasks(loadedTasks);
-        setError('');
+            setTasks(sortTasks(loadedTasks));
+            setLoading(false);
+            setError('');
+          },
+          (snapshotError) => {
+            console.error('Error loading tasks:', snapshotError);
+            setLoading(false);
+            setError('We could not load your tasks.');
+          }
+        );
+      } catch (initializationError) {
+        console.error(
+          'Error initializing tasks:',
+          initializationError
+        );
         setLoading(false);
-      },
-      (firebaseError) => {
-        console.error('Error loading tasks:', firebaseError);
-        setError('We couldn’t load your tasks.');
-        setLoading(false);
+        setError('We could not load your tasks.');
       }
-    );
+    };
 
-    return unsubscribe;
+    initializeTasks();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const addTask = async (taskData) => {
     try {
-      setError('');
-
       await addDoc(tasksCollection, {
         ...taskData,
-        status: taskData.status || 'Not Started',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-    } catch (firebaseError) {
-      console.error('Error adding task:', firebaseError);
-      setError('We couldn’t add that task.');
-      throw firebaseError;
+    } catch (addError) {
+      console.error('Error adding task:', addError);
+      throw addError;
     }
   };
 
   const updateTask = async (taskId, taskData) => {
     try {
-      setError('');
-
       await updateDoc(doc(tasksCollection, taskId), {
         ...taskData,
         updatedAt: serverTimestamp(),
       });
-    } catch (firebaseError) {
-      console.error('Error updating task:', firebaseError);
-      setError('We couldn’t update that task.');
-      throw firebaseError;
+    } catch (updateError) {
+      console.error('Error updating task:', updateError);
+      throw updateError;
     }
   };
 
   const deleteTask = async (taskId) => {
     try {
-      setError('');
-
       await deleteDoc(doc(tasksCollection, taskId));
-    } catch (firebaseError) {
-      console.error('Error deleting task:', firebaseError);
-      setError('We couldn’t delete that task.');
-      throw firebaseError;
+    } catch (deleteError) {
+      console.error('Error deleting task:', deleteError);
+      throw deleteError;
     }
   };
 
   const toggleTask = async (taskId) => {
-    const task = tasks.find((currentTask) => currentTask.id === taskId);
+    const task = tasks.find((item) => item.id === taskId);
 
     if (!task) {
       return;
     }
 
     const newStatus =
-      task.status === 'Complete'
-        ? 'Not Started'
-        : 'Complete';
+      task.status === 'Complete' ? 'Not Started' : 'Complete';
 
-    await updateTask(taskId, {
+    await updateDoc(doc(tasksCollection, taskId), {
       status: newStatus,
+      updatedAt: serverTimestamp(),
     });
   };
 
   const changeTaskStatus = async (taskId, status) => {
-    await updateTask(taskId, {
-      status,
-    });
+    try {
+      await updateDoc(doc(tasksCollection, taskId), {
+        status,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (statusError) {
+      console.error('Error changing task status:', statusError);
+      throw statusError;
+    }
   };
 
   const stats = useMemo(() => {
@@ -236,14 +275,15 @@ function TaskProvider({ children }) {
       (task) => task.status === 'Not Started'
     ).length;
 
+    const percentage =
+      total === 0 ? 0 : Math.round((complete / total) * 100);
+
     return {
       total,
       complete,
       inProgress,
       notStarted,
-      percentage: total
-        ? Math.round((complete / total) * 100)
-        : 0,
+      percentage,
     };
   }, [tasks]);
 
@@ -266,7 +306,7 @@ function TaskProvider({ children }) {
   );
 }
 
-function useTasks() {
+export function useTasks() {
   const context = useContext(TaskContext);
 
   if (!context) {
@@ -275,5 +315,3 @@ function useTasks() {
 
   return context;
 }
-
-export { TaskProvider, useTasks };
