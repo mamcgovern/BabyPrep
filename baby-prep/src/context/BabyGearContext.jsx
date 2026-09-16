@@ -7,7 +7,13 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { db } from '../services/firebase';
 import { FAMILY_ID } from '../config/baby';
 import { useBudget } from './BudgetContext';
@@ -20,15 +26,6 @@ const gearCollection = collection(
   FAMILY_ID,
   'babyGear'
 );
-
-function sortGear(items) {
-  return [...items].sort((a, b) => {
-    const aTime = a.createdAt?.toMillis?.() ?? 0;
-    const bTime = b.createdAt?.toMillis?.() ?? 0;
-
-    return bTime - aTime;
-  });
-}
 
 export const gearCategories = [
   'Strollers',
@@ -53,8 +50,23 @@ export const gearStatuses = [
   "Don't Want",
 ];
 
+function sortGear(items) {
+  return [...items].sort((a, b) => {
+    const aTime = a.createdAt?.toMillis?.() ?? 0;
+    const bTime = b.createdAt?.toMillis?.() ?? 0;
+
+    return bTime - aTime;
+  });
+}
+
 export function BabyGearProvider({ children }) {
-  const { addFromBabyGear, updateBudgetItem, deleteBudgetItem } = useBudget();
+  const {
+    addBudgetItemFromBabyGear,
+    updateBudgetItem,
+    deleteBudgetItem,
+    detachBudgetSource,
+    getBudgetItem,
+  } = useBudget();
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,51 +96,101 @@ export function BabyGearProvider({ children }) {
   }, []);
 
   const addGear = async (gearData) => {
-    const gearDoc = await addDoc(gearCollection, {
+    const gearRef = await addDoc(gearCollection, {
       ...gearData,
-      price:
-        gearData.price === '' || gearData.price == null
-          ? null
-          : Number(gearData.price),
       budgetItemId: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
 
-    return gearDoc.id;
+    return gearRef.id;
   };
 
   const updateGear = async (gearId, gearData) => {
-    const existingItem = items.find((item) => item.id === gearId);
-
-    const updatedPrice =
-      gearData.price === '' || gearData.price == null
-        ? null
-        : Number(gearData.price);
+    const currentItem = items.find((item) => item.id === gearId);
 
     await updateDoc(doc(gearCollection, gearId), {
       ...gearData,
-      price: updatedPrice,
       updatedAt: serverTimestamp(),
     });
 
-    if (existingItem?.budgetItemId) {
-      await updateBudgetItem(existingItem.budgetItemId, {
-        plannedAmount: updatedPrice || 0,
-        name: gearData.name || existingItem.name,
-        sourceName: gearData.name || existingItem.name,
-      });
+    if (
+      currentItem?.budgetItemId &&
+      gearData.price !== undefined &&
+      Number(gearData.price) !== Number(currentItem.price)
+    ) {
+      const budgetItem = getBudgetItem(currentItem.budgetItemId);
+
+      if (budgetItem) {
+        await updateBudgetItem(currentItem.budgetItemId, {
+          plannedAmount: Number(gearData.price) || 0,
+          sourceName: gearData.name || currentItem.name,
+        });
+      }
+    }
+
+    if (
+      currentItem?.budgetItemId &&
+      gearData.name &&
+      gearData.name !== currentItem.name
+    ) {
+      const budgetItem = getBudgetItem(currentItem.budgetItemId);
+
+      if (budgetItem) {
+        await updateBudgetItem(currentItem.budgetItemId, {
+          name: gearData.name,
+          sourceName: gearData.name,
+        });
+      }
     }
   };
 
-  const addToBudget = async (gearItem) => {
-    if (gearItem.budgetItemId) {
-      return gearItem.budgetItemId;
+  const deleteGear = async (gearId) => {
+    const currentItem = items.find((item) => item.id === gearId);
+
+    if (currentItem?.budgetItemId) {
+      const budgetItem = getBudgetItem(currentItem.budgetItemId);
+
+      if (budgetItem) {
+        const actualAmount = Number(budgetItem.actualAmount) || 0;
+
+        if (actualAmount > 0) {
+          await detachBudgetSource(currentItem.budgetItemId);
+        } else {
+          await deleteBudgetItem(currentItem.budgetItemId);
+        }
+      }
     }
 
-    const budgetItemId = await addFromBabyGear(gearItem);
+    await deleteDoc(doc(gearCollection, gearId));
+  };
 
-    await updateDoc(doc(gearCollection, gearItem.id), {
+  const addGearToBudget = async (gearId) => {
+    const gearItem = items.find((item) => item.id === gearId);
+
+    if (!gearItem) {
+      throw new Error('We could not find that baby gear item.');
+    }
+
+    if (gearItem.budgetItemId) {
+      const existingBudgetItem = getBudgetItem(gearItem.budgetItemId);
+
+      if (existingBudgetItem) {
+        return existingBudgetItem.id;
+      }
+    }
+
+    const price = Number(gearItem.price);
+
+    if (Number.isNaN(price) || price < 0) {
+      throw new Error(
+        'Add a price to the baby gear item before adding it to your budget.'
+      );
+    }
+
+    const budgetItemId = await addBudgetItemFromBabyGear(gearItem);
+
+    await updateDoc(doc(gearCollection, gearId), {
       budgetItemId,
       updatedAt: serverTimestamp(),
     });
@@ -136,35 +198,53 @@ export function BabyGearProvider({ children }) {
     return budgetItemId;
   };
 
-  const removeFromBudget = async (gearItem) => {
+  const removeGearFromBudget = async (gearId) => {
+    const gearItem = items.find((item) => item.id === gearId);
+
     if (!gearItem?.budgetItemId) {
       return;
     }
 
-    await deleteBudgetItem(gearItem.budgetItemId);
+    const budgetItem = getBudgetItem(gearItem.budgetItemId);
 
-    await updateDoc(doc(gearCollection, gearItem.id), {
+    if (budgetItem) {
+      const actualAmount = Number(budgetItem.actualAmount) || 0;
+
+      if (actualAmount > 0) {
+        await detachBudgetSource(gearItem.budgetItemId);
+      } else {
+        await deleteBudgetItem(gearItem.budgetItemId);
+      }
+    }
+
+    await updateDoc(doc(gearCollection, gearId), {
       budgetItemId: null,
       updatedAt: serverTimestamp(),
     });
   };
 
-  const deleteGear = async (gearId, deleteConnectedBudget = false) => {
-    const existingItem = items.find((item) => item.id === gearId);
+  const stats = useMemo(
+    () => ({
+      total: items.length,
+      researching: items.filter(
+        (item) => item.status === 'Researching'
+      ).length,
+      considering: items.filter(
+        (item) => item.status === 'Considering'
+      ).length,
+      decided: items.filter(
+        (item) => item.status === 'Decided'
+      ).length,
+      budgeted: items.filter((item) => {
+        if (!item.budgetItemId) {
+          return false;
+        }
 
-    if (deleteConnectedBudget && existingItem?.budgetItemId) {
-      await deleteBudgetItem(existingItem.budgetItemId);
-    }
-
-    await deleteDoc(doc(gearCollection, gearId));
-  };
-
-  const stats = useMemo(() => ({
-    total: items.length,
-    researching: items.filter((item) => item.status === 'Researching').length,
-    considering: items.filter((item) => item.status === 'Considering').length,
-    decided: items.filter((item) => item.status === 'Decided').length,
-  }), [items]);
+        return Boolean(getBudgetItem(item.budgetItemId));
+      }).length,
+    }),
+    [items, getBudgetItem]
+  );
 
   return (
     <BabyGearContext.Provider
@@ -176,8 +256,9 @@ export function BabyGearProvider({ children }) {
         addGear,
         updateGear,
         deleteGear,
-        addToBudget,
-        removeFromBudget,
+        addGearToBudget,
+        removeGearFromBudget,
+        getBudgetItem,
       }}
     >
       {children}
@@ -189,7 +270,9 @@ export function useBabyGear() {
   const context = useContext(BabyGearContext);
 
   if (!context) {
-    throw new Error('useBabyGear must be used inside a BabyGearProvider');
+    throw new Error(
+      'useBabyGear must be used inside a BabyGearProvider'
+    );
   }
 
   return context;

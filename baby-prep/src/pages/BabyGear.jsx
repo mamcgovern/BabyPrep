@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   gearCategories,
   gearStatuses,
@@ -7,53 +8,73 @@ import {
 
 const emptyForm = {
   name: '',
-  brand: '',
   category: 'Strollers',
+  brand: '',
   price: '',
-  productUrl: '',
-  imageUrl: '',
+  productLink: '',
+  image: '',
   status: 'Researching',
-  maddieRating: 0,
-  nickRating: 0,
-  favorite: false,
+  maddieRating: '',
+  nickRating: '',
+  notes: '',
+  sharedNotes: '',
   pros: '',
   cons: '',
-  notes: '',
-  comparisonFields: {
-    weight: '',
-    dimensions: '',
-    fold: '',
-    compatibility: '',
-  },
+  favorite: false,
 };
 
-function Rating({ value, onChange, label }) {
-  return (
-    <div className="gear-rating">
-      <span>{label}</span>
+const statusDescriptions = {
+  Researching: 'Still exploring',
+  Considering: 'On our shortlist',
+  Decided: 'We have a decision',
+  "Don't Want": 'Not for us',
+};
 
-      <div className="gear-stars">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            className={star <= value ? 'selected' : ''}
-            onClick={() => onChange(star === value ? 0 : star)}
-            aria-label={`${star} out of 5`}
-          >
-            ★
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+const statusClassNames = {
+  Researching: 'researching',
+  Considering: 'considering',
+  Decided: 'decided',
+  "Don't Want": 'dont-want',
+};
+
+function formatCurrency(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return '$0';
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(number);
+}
+
+function getRatingLabel(rating) {
+  if (!rating) {
+    return 'Not rated';
+  }
+
+  return `${rating}/5`;
+}
+
+function splitList(value) {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function GearModal({
   isOpen,
+  editingItem,
   onClose,
   onSave,
-  editingItem,
   saving,
 }) {
   const [form, setForm] = useState(emptyForm);
@@ -66,54 +87,47 @@ function GearModal({
     if (editingItem) {
       setForm({
         name: editingItem.name || '',
-        brand: editingItem.brand || '',
         category: editingItem.category || 'Strollers',
-        price: editingItem.price ?? '',
-        productUrl: editingItem.productUrl || '',
-        imageUrl: editingItem.imageUrl || '',
+        brand: editingItem.brand || '',
+        price:
+          editingItem.price === null ||
+          editingItem.price === undefined
+            ? ''
+            : String(editingItem.price),
+        productLink: editingItem.productLink || '',
+        image: editingItem.image || '',
         status: editingItem.status || 'Researching',
-        maddieRating: editingItem.maddieRating || 0,
-        nickRating: editingItem.nickRating || 0,
-        favorite: editingItem.favorite || false,
+        maddieRating:
+          editingItem.maddieRating === null ||
+          editingItem.maddieRating === undefined
+            ? ''
+            : String(editingItem.maddieRating),
+        nickRating:
+          editingItem.nickRating === null ||
+          editingItem.nickRating === undefined
+            ? ''
+            : String(editingItem.nickRating),
+        notes: editingItem.notes || '',
+        sharedNotes: editingItem.sharedNotes || '',
         pros: editingItem.pros || '',
         cons: editingItem.cons || '',
-        notes: editingItem.notes || '',
-        comparisonFields: {
-          weight: editingItem.comparisonFields?.weight || '',
-          dimensions: editingItem.comparisonFields?.dimensions || '',
-          fold: editingItem.comparisonFields?.fold || '',
-          compatibility:
-            editingItem.comparisonFields?.compatibility || '',
-        },
+        favorite: Boolean(editingItem.favorite),
       });
     } else {
-      setForm({
-        ...emptyForm,
-        comparisonFields: {
-          ...emptyForm.comparisonFields,
-        },
-      });
+      setForm(emptyForm);
     }
   }, [isOpen, editingItem]);
+
+  if (!isOpen) {
+    return null;
+  }
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
-    setForm((currentForm) => ({
-      ...currentForm,
+    setForm((current) => ({
+      ...current,
       [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handleComparisonChange = (event) => {
-    const { name, value } = event.target;
-
-    setForm((currentForm) => ({
-      ...currentForm,
-      comparisonFields: {
-        ...currentForm.comparisonFields,
-        [name]: value,
-      },
     }));
   };
 
@@ -127,38 +141,53 @@ function GearModal({
     await onSave({
       ...form,
       name: form.name.trim(),
-      price: form.price === '' ? null : Number(form.price),
+      brand: form.brand.trim(),
+      price:
+        form.price === '' ? null : Number(form.price),
+      maddieRating:
+        form.maddieRating === ''
+          ? null
+          : Number(form.maddieRating),
+      nickRating:
+        form.nickRating === ''
+          ? null
+          : Number(form.nickRating),
+      productLink: form.productLink.trim(),
+      image: form.image.trim(),
+      notes: form.notes.trim(),
+      sharedNotes: form.sharedNotes.trim(),
+      pros: form.pros.trim(),
+      cons: form.cons.trim(),
     });
   };
-
-  if (!isOpen) {
-    return null;
-  }
 
   return (
     <div
       className="gear-modal-overlay"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !saving) {
+        if (
+          event.target === event.currentTarget &&
+          !saving
+        ) {
           onClose();
         }
       }}
     >
-      <div
-        className="gear-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="gear-modal-title"
-      >
+      <div className="gear-modal">
         <div className="gear-modal-header">
           <div>
-            <p className="gear-modal-eyebrow">
-              {editingItem ? 'UPDATE GEAR' : 'ADD GEAR'}
+            <p className="card-eyebrow">
+              {editingItem ? 'Update Research' : 'New Product'}
             </p>
-
-            <h2 id="gear-modal-title">
-              {editingItem ? 'Edit Baby Gear' : 'Add Baby Gear'}
+            <h2>
+              {editingItem
+                ? 'Edit baby gear'
+                : 'Add baby gear'}
             </h2>
+            <p>
+              Keep product details, opinions, and notes
+              together while you research.
+            </p>
           </div>
 
           <button
@@ -173,232 +202,258 @@ function GearModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="gear-form-grid">
-            <label className="gear-form-field gear-form-field-full">
-              <span>Product name</span>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="e.g. UPPAbaby Vista V3"
-                autoFocus
-                required
-              />
-            </label>
+          <div className="gear-form-section">
+            <div className="gear-form-section-heading">
+              <span className="gear-form-number">01</span>
+              <div>
+                <strong>Product details</strong>
+                <span>What are you researching?</span>
+              </div>
+            </div>
 
-            <label className="gear-form-field">
-              <span>Brand</span>
-              <input
-                type="text"
-                name="brand"
-                value={form.brand}
-                onChange={handleChange}
-                placeholder="e.g. UPPAbaby"
-              />
-            </label>
-
-            <label className="gear-form-field">
-              <span>Category</span>
-              <select
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-              >
-                {gearCategories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="gear-form-field">
-              <span>Price</span>
-              <div className="gear-price-input">
-                <span>$</span>
+            <div className="gear-form-grid">
+              <label className="gear-form-field gear-form-field-wide">
+                <span>Product name</span>
                 <input
-                  type="number"
-                  name="price"
-                  min="0"
-                  step="0.01"
-                  value={form.price}
+                  type="text"
+                  name="name"
+                  value={form.name}
                   onChange={handleChange}
-                  placeholder="0.00"
+                  placeholder="e.g. Nuna TRVL stroller"
+                  autoFocus
+                  required
                 />
-              </div>
-              <small className="gear-field-help">
-                This becomes the planned Budget amount if you add it to Budget.
-              </small>
-            </label>
+              </label>
 
-            <label className="gear-form-field">
-              <span>Status</span>
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-              >
-                {gearStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="gear-form-field">
+                <span>Category</span>
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                >
+                  {gearCategories.map((category) => (
+                    <option
+                      key={category}
+                      value={category}
+                    >
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label className="gear-form-field gear-form-field-full">
-              <span>Product URL</span>
-              <input
-                type="url"
-                name="productUrl"
-                value={form.productUrl}
-                onChange={handleChange}
-                placeholder="https://..."
-              />
-            </label>
+              <label className="gear-form-field">
+                <span>Brand</span>
+                <input
+                  type="text"
+                  name="brand"
+                  value={form.brand}
+                  onChange={handleChange}
+                  placeholder="Brand"
+                />
+              </label>
 
-            <label className="gear-form-field gear-form-field-full">
-              <span>Image URL</span>
-              <input
-                type="url"
-                name="imageUrl"
-                value={form.imageUrl}
-                onChange={handleChange}
-                placeholder="https://..."
-              />
-            </label>
-
-            <div className="gear-form-section gear-form-field-full">
-              <div className="gear-form-section-heading">
-                <div>
-                  <span>Our ratings</span>
-                  <small>Rate it separately before discussing it together.</small>
+              <label className="gear-form-field">
+                <span>Price</span>
+                <div className="gear-money-input">
+                  <span>$</span>
+                  <input
+                    type="number"
+                    name="price"
+                    value={form.price}
+                    onChange={handleChange}
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                  />
                 </div>
-              </div>
+              </label>
 
-              <div className="gear-ratings-grid">
-                <Rating
-                  label="Maddie"
-                  value={form.maddieRating}
-                  onChange={(value) =>
-                    setForm((currentForm) => ({
-                      ...currentForm,
-                      maddieRating: value,
-                    }))
-                  }
+              <label className="gear-form-field gear-form-field-wide">
+                <span>Product link</span>
+                <input
+                  type="url"
+                  name="productLink"
+                  value={form.productLink}
+                  onChange={handleChange}
+                  placeholder="https://..."
                 />
+              </label>
 
-                <Rating
-                  label="Nick"
-                  value={form.nickRating}
-                  onChange={(value) =>
-                    setForm((currentForm) => ({
-                      ...currentForm,
-                      nickRating: value,
-                    }))
-                  }
+              <label className="gear-form-field gear-form-field-wide">
+                <span>Image URL</span>
+                <input
+                  type="url"
+                  name="image"
+                  value={form.image}
+                  onChange={handleChange}
+                  placeholder="https://..."
                 />
+              </label>
+            </div>
+          </div>
+
+          <div className="gear-form-section">
+            <div className="gear-form-section-heading">
+              <span className="gear-form-number">02</span>
+              <div>
+                <strong>Where you stand</strong>
+                <span>Track your current thinking</span>
               </div>
             </div>
 
-            <div className="gear-form-section gear-form-field-full">
-              <div className="gear-form-section-heading">
-                <div>
-                  <span>Comparison details</span>
+            <div className="gear-status-options">
+              {gearStatuses.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  className={`gear-status-option ${
+                    form.status === status
+                      ? `selected ${statusClassNames[status]}`
+                      : ''
+                  }`}
+                  onClick={() =>
+                    setForm((current) => ({
+                      ...current,
+                      status,
+                    }))
+                  }
+                >
+                  <span>{status}</span>
                   <small>
-                    Add the details you may want to compare later.
+                    {statusDescriptions[status]}
                   </small>
-                </div>
-              </div>
-
-              <div className="gear-comparison-form-grid">
-                <label className="gear-form-field">
-                  <span>Weight</span>
-                  <input
-                    type="text"
-                    name="weight"
-                    value={form.comparisonFields.weight}
-                    onChange={handleComparisonChange}
-                    placeholder="e.g. 26.5 lb"
-                  />
-                </label>
-
-                <label className="gear-form-field">
-                  <span>Dimensions</span>
-                  <input
-                    type="text"
-                    name="dimensions"
-                    value={form.comparisonFields.dimensions}
-                    onChange={handleComparisonChange}
-                    placeholder="e.g. 36 × 25 × 18 in"
-                  />
-                </label>
-
-                <label className="gear-form-field">
-                  <span>Fold / setup</span>
-                  <input
-                    type="text"
-                    name="fold"
-                    value={form.comparisonFields.fold}
-                    onChange={handleComparisonChange}
-                    placeholder="e.g. One-handed"
-                  />
-                </label>
-
-                <label className="gear-form-field">
-                  <span>Compatibility</span>
-                  <input
-                    type="text"
-                    name="compatibility"
-                    value={form.comparisonFields.compatibility}
-                    onChange={handleComparisonChange}
-                    placeholder="e.g. Infant car seat"
-                  />
-                </label>
-              </div>
+                </button>
+              ))}
             </div>
 
-            <label className="gear-form-field">
-              <span>Pros</span>
-              <textarea
-                name="pros"
-                value={form.pros}
+            <label className="gear-favorite-toggle">
+              <input
+                type="checkbox"
+                name="favorite"
+                checked={form.favorite}
                 onChange={handleChange}
-                placeholder="What do we like?"
               />
-            </label>
-
-            <label className="gear-form-field">
-              <span>Cons</span>
-              <textarea
-                name="cons"
-                value={form.cons}
-                onChange={handleChange}
-                placeholder="What concerns us?"
-              />
-            </label>
-
-            <label className="gear-form-field gear-form-field-full">
-              <span>Notes</span>
-              <textarea
-                name="notes"
-                value={form.notes}
-                onChange={handleChange}
-                placeholder="Anything else we want to remember?"
-              />
+              <span className="gear-checkbox">
+                {form.favorite ? '★' : ''}
+              </span>
+              <span>
+                <strong>Favorite this product</strong>
+                <small>Keep it easy to find later.</small>
+              </span>
             </label>
           </div>
 
-          <label className="gear-checkbox">
-            <input
-              type="checkbox"
-              name="favorite"
-              checked={form.favorite}
-              onChange={handleChange}
-            />
-            <span>Mark as a favorite</span>
-          </label>
+          <div className="gear-form-section">
+            <div className="gear-form-section-heading">
+              <span className="gear-form-number">03</span>
+              <div>
+                <strong>Your ratings</strong>
+                <span>How does each of you feel about it?</span>
+              </div>
+            </div>
+
+            <div className="gear-rating-grid">
+              <label className="gear-rating-card">
+                <span className="gear-rating-person">M</span>
+                <div>
+                  <strong>Maddie</strong>
+                  <small>Your rating</small>
+                </div>
+                <select
+                  name="maddieRating"
+                  value={form.maddieRating}
+                  onChange={handleChange}
+                >
+                  <option value="">Not rated</option>
+                  <option value="1">1 / 5</option>
+                  <option value="2">2 / 5</option>
+                  <option value="3">3 / 5</option>
+                  <option value="4">4 / 5</option>
+                  <option value="5">5 / 5</option>
+                </select>
+              </label>
+
+              <label className="gear-rating-card">
+                <span className="gear-rating-person gear-rating-person-blue">
+                  N
+                </span>
+                <div>
+                  <strong>Nick</strong>
+                  <small>His rating</small>
+                </div>
+                <select
+                  name="nickRating"
+                  value={form.nickRating}
+                  onChange={handleChange}
+                >
+                  <option value="">Not rated</option>
+                  <option value="1">1 / 5</option>
+                  <option value="2">2 / 5</option>
+                  <option value="3">3 / 5</option>
+                  <option value="4">4 / 5</option>
+                  <option value="5">5 / 5</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div className="gear-form-section">
+            <div className="gear-form-section-heading">
+              <span className="gear-form-number">04</span>
+              <div>
+                <strong>Notes</strong>
+                <span>Capture what matters</span>
+              </div>
+            </div>
+
+            <div className="gear-form-grid">
+              <label className="gear-form-field">
+                <span>Pros</span>
+                <textarea
+                  name="pros"
+                  value={form.pros}
+                  onChange={handleChange}
+                  rows="4"
+                  placeholder="One item per line"
+                />
+              </label>
+
+              <label className="gear-form-field">
+                <span>Cons</span>
+                <textarea
+                  name="cons"
+                  value={form.cons}
+                  onChange={handleChange}
+                  rows="4"
+                  placeholder="One item per line"
+                />
+              </label>
+
+              <label className="gear-form-field">
+                <span>Maddie's notes</span>
+                <textarea
+                  name="notes"
+                  value={form.notes}
+                  onChange={handleChange}
+                  rows="4"
+                  placeholder="Your thoughts..."
+                />
+              </label>
+
+              <label className="gear-form-field">
+                <span>Shared notes</span>
+                <textarea
+                  name="sharedNotes"
+                  value={form.sharedNotes}
+                  onChange={handleChange}
+                  rows="4"
+                  placeholder="Things to discuss together..."
+                />
+              </label>
+            </div>
+          </div>
 
           <div className="gear-modal-actions">
             <button
@@ -419,7 +474,7 @@ function GearModal({
                 ? 'Saving...'
                 : editingItem
                   ? 'Save Changes'
-                  : 'Add Gear'}
+                  : 'Add Product'}
             </button>
           </div>
         </form>
@@ -428,12 +483,277 @@ function GearModal({
   );
 }
 
-function ComparisonModal({ items, onClose }) {
-  if (!items.length) {
+function GearCard({
+  item,
+  budgetItem,
+  onEdit,
+  onDelete,
+  onToggleFavorite,
+  onAddToBudget,
+  onRemoveFromBudget,
+  onViewBudget,
+  onCompare,
+  isComparing,
+  compareDisabled,
+}) {
+  const pros = splitList(item.pros);
+  const cons = splitList(item.cons);
+  const statusClass =
+    statusClassNames[item.status] || 'researching';
+
+  return (
+    <article className="gear-card">
+      <div className="gear-card-image">
+        {item.image ? (
+          <img
+            src={item.image}
+            alt=""
+            loading="lazy"
+          />
+        ) : (
+          <div className="gear-card-image-placeholder">
+            <span>✦</span>
+            <small>Baby gear</small>
+          </div>
+        )}
+
+        <button
+          type="button"
+          className={`gear-favorite-button ${
+            item.favorite ? 'active' : ''
+          }`}
+          onClick={() => onToggleFavorite(item)}
+          aria-label={
+            item.favorite
+              ? 'Remove from favorites'
+              : 'Add to favorites'
+          }
+        >
+          {item.favorite ? '★' : '☆'}
+        </button>
+
+        <span
+          className={`gear-status-badge ${statusClass}`}
+        >
+          {item.status}
+        </span>
+      </div>
+
+      <div className="gear-card-content">
+        <div className="gear-card-heading">
+          <div>
+            <p className="gear-card-category">
+              {item.category}
+            </p>
+            <h2>{item.name}</h2>
+            {item.brand && (
+              <p className="gear-card-brand">
+                {item.brand}
+              </p>
+            )}
+          </div>
+
+          {item.price !== null &&
+            item.price !== undefined &&
+            item.price !== '' && (
+              <strong className="gear-card-price">
+                {formatCurrency(item.price)}
+              </strong>
+            )}
+        </div>
+
+        <div className="gear-card-ratings">
+          <div>
+            <span className="gear-rating-avatar">
+              M
+            </span>
+            <span>Maddie</span>
+            <strong>
+              {getRatingLabel(item.maddieRating)}
+            </strong>
+          </div>
+
+          <div>
+            <span className="gear-rating-avatar blue">
+              N
+            </span>
+            <span>Nick</span>
+            <strong>
+              {getRatingLabel(item.nickRating)}
+            </strong>
+          </div>
+        </div>
+
+        {(pros.length > 0 || cons.length > 0) && (
+          <div className="gear-card-pros-cons">
+            {pros.length > 0 && (
+              <div>
+                <span className="gear-list-heading">
+                  Pros
+                </span>
+                <ul>
+                  {pros.slice(0, 3).map((pro, index) => (
+                    <li key={`${pro}-${index}`}>{pro}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {cons.length > 0 && (
+              <div>
+                <span className="gear-list-heading">
+                  Cons
+                </span>
+                <ul>
+                  {cons.slice(0, 3).map((con, index) => (
+                    <li key={`${con}-${index}`}>{con}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {item.sharedNotes && (
+          <div className="gear-shared-note">
+            <span>Shared note</span>
+            <p>{item.sharedNotes}</p>
+          </div>
+        )}
+
+        <div className="gear-budget-section">
+          <div className="gear-budget-heading">
+            <div>
+              <span className="gear-budget-label">
+                Budget
+              </span>
+              {budgetItem ? (
+                <strong>Connected</strong>
+              ) : (
+                <small>Not added yet</small>
+              )}
+            </div>
+
+            {budgetItem &&
+              budgetItem.actualAmount !== null &&
+              budgetItem.actualAmount !== undefined && (
+                <span className="gear-budget-spent">
+                  {formatCurrency(
+                    budgetItem.actualAmount
+                  )}{' '}
+                  spent
+                </span>
+              )}
+          </div>
+
+          {budgetItem ? (
+            <div className="gear-budget-connected">
+              <span>
+                Planned{' '}
+                <strong>
+                  {formatCurrency(
+                    budgetItem.plannedAmount
+                  )}
+                </strong>
+              </span>
+
+              <button
+                type="button"
+                onClick={onViewBudget}
+              >
+                View Budget
+              </button>
+
+              <button
+                type="button"
+                className="subtle-danger"
+                onClick={onRemoveFromBudget}
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="gear-add-budget-button"
+              onClick={onAddToBudget}
+              disabled={
+                item.price === null ||
+                item.price === undefined ||
+                item.price === ''
+              }
+            >
+              <span>+</span>
+              Add {item.price ? 'to Budget' : 'a price to budget'}
+            </button>
+          )}
+        </div>
+
+        <div className="gear-card-actions">
+          <label
+            className={`gear-compare-control ${
+              isComparing ? 'active' : ''
+            } ${compareDisabled ? 'disabled' : ''}`}
+          >
+            <input
+              type="checkbox"
+              checked={isComparing}
+              disabled={compareDisabled && !isComparing}
+              onChange={() => onCompare(item.id)}
+            />
+            <span>
+              {isComparing
+                ? 'Comparing'
+                : 'Compare'}
+            </span>
+          </label>
+
+          <div className="gear-card-links">
+            {item.productLink && (
+              <a
+                href={item.productLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View product ↗
+              </a>
+            )}
+
+            <button
+              type="button"
+              onClick={() => onEdit(item)}
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              className="danger"
+              onClick={() => onDelete(item)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function ComparePanel({
+  items,
+  onRemove,
+  onClose,
+}) {
+  if (items.length === 0) {
     return null;
   }
 
-  const comparisonRows = [
+  const comparisonFields = [
+    {
+      label: 'Category',
+      getValue: (item) => item.category || '—',
+    },
     {
       label: 'Brand',
       getValue: (item) => item.brand || '—',
@@ -441,7 +761,11 @@ function ComparisonModal({ items, onClose }) {
     {
       label: 'Price',
       getValue: (item) =>
-        item.price != null ? `$${Number(item.price).toLocaleString()}` : '—',
+        item.price === null ||
+        item.price === undefined ||
+        item.price === ''
+          ? 'Not listed'
+          : formatCurrency(item.price),
     },
     {
       label: 'Status',
@@ -450,104 +774,88 @@ function ComparisonModal({ items, onClose }) {
     {
       label: 'Maddie',
       getValue: (item) =>
-        item.maddieRating
-          ? `${'★'.repeat(item.maddieRating)}${'☆'.repeat(
-              5 - item.maddieRating
-            )}`
-          : '—',
+        getRatingLabel(item.maddieRating),
     },
     {
       label: 'Nick',
       getValue: (item) =>
-        item.nickRating
-          ? `${'★'.repeat(item.nickRating)}${'☆'.repeat(
-              5 - item.nickRating
-            )}`
-          : '—',
-    },
-    {
-      label: 'Weight',
-      getValue: (item) => item.comparisonFields?.weight || '—',
-    },
-    {
-      label: 'Dimensions',
-      getValue: (item) => item.comparisonFields?.dimensions || '—',
-    },
-    {
-      label: 'Fold / setup',
-      getValue: (item) => item.comparisonFields?.fold || '—',
-    },
-    {
-      label: 'Compatibility',
-      getValue: (item) => item.comparisonFields?.compatibility || '—',
+        getRatingLabel(item.nickRating),
     },
     {
       label: 'Pros',
-      getValue: (item) => item.pros || '—',
+      getValue: (item) =>
+        splitList(item.pros).length > 0
+          ? splitList(item.pros).join(', ')
+          : '—',
     },
     {
       label: 'Cons',
-      getValue: (item) => item.cons || '—',
+      getValue: (item) =>
+        splitList(item.cons).length > 0
+          ? splitList(item.cons).join(', ')
+          : '—',
+    },
+    {
+      label: 'Notes',
+      getValue: (item) =>
+        item.sharedNotes ||
+        item.notes ||
+        '—',
     },
   ];
 
   return (
-    <div
-      className="gear-modal-overlay"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <div className="gear-comparison-modal">
-        <div className="gear-modal-header">
+    <div className="compare-panel-overlay">
+      <div className="compare-panel">
+        <div className="compare-panel-header">
           <div>
-            <p className="gear-modal-eyebrow">COMPARE</p>
-            <h2>Baby Gear Comparison</h2>
+            <p className="card-eyebrow">
+              Side by side
+            </p>
+            <h2>Compare baby gear</h2>
+            <p>
+              Look at your options together before
+              making a decision.
+            </p>
           </div>
 
           <button
             type="button"
             className="gear-modal-close"
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Close comparison"
           >
             ×
           </button>
         </div>
 
-        <div className="gear-comparison-scroll">
-          <table className="gear-comparison-table">
+        <div className="compare-table-wrap">
+          <table className="compare-table">
             <thead>
               <tr>
-                <th>Details</th>
-
+                <th></th>
                 {items.map((item) => (
                   <th key={item.id}>
-                    <div className="comparison-product">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt=""
-                        />
-                      ) : (
-                        <div className="comparison-product-placeholder">
-                          ♡
-                        </div>
-                      )}
+                    <div className="compare-product">
+                      <div className="compare-product-image">
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt=""
+                          />
+                        ) : (
+                          <span>✦</span>
+                        )}
+                      </div>
 
                       <strong>{item.name}</strong>
 
-                      {item.productUrl && (
-                        <a
-                          href={item.productUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View product ↗
-                        </a>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => onRemove(item.id)}
+                      >
+                        Remove
+                      </button>
                     </div>
                   </th>
                 ))}
@@ -555,13 +863,12 @@ function ComparisonModal({ items, onClose }) {
             </thead>
 
             <tbody>
-              {comparisonRows.map((row) => (
-                <tr key={row.label}>
-                  <th>{row.label}</th>
-
+              {comparisonFields.map((field) => (
+                <tr key={field.label}>
+                  <th>{field.label}</th>
                   {items.map((item) => (
                     <td key={item.id}>
-                      {row.getValue(item)}
+                      {field.getValue(item)}
                     </td>
                   ))}
                 </tr>
@@ -575,6 +882,8 @@ function ComparisonModal({ items, onClose }) {
 }
 
 function BabyGear() {
+  const navigate = useNavigate();
+
   const {
     items,
     stats,
@@ -583,120 +892,202 @@ function BabyGear() {
     addGear,
     updateGear,
     deleteGear,
-    addToBudget,
-    removeFromBudget,
+    addGearToBudget,
+    removeGearFromBudget,
+    getBudgetItem,
   } = useBabyGear();
 
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeStatus, setActiveStatus] = useState('All');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [comparisonOpen, setComparisonOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [saving, setSaving] = useState(false);
-  const [budgetActionId, setBudgetActionId] = useState(null);
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] =
+    useState('all');
+  const [statusFilter, setStatusFilter] =
+    useState('all');
+  const [favoriteOnly, setFavoriteOnly] =
+    useState(false);
 
-  const filteredItems = useMemo(() => {
+  const [showModal, setShowModal] =
+    useState(false);
+  const [editingItem, setEditingItem] =
+    useState(null);
+  const [saving, setSaving] =
+    useState(false);
+  const [pageError, setPageError] =
+    useState('');
+
+  const [compareIds, setCompareIds] =
+    useState([]);
+  const [showCompare, setShowCompare] =
+    useState(false);
+
+  const visibleItems = useMemo(() => {
+    const searchValue = search
+      .trim()
+      .toLowerCase();
+
     return items.filter((item) => {
+      const matchesSearch =
+        !searchValue ||
+        [
+          item.name,
+          item.brand,
+          item.category,
+          item.notes,
+          item.sharedNotes,
+          item.pros,
+          item.cons,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(searchValue);
+
       const matchesCategory =
-        activeCategory === 'All' || item.category === activeCategory;
+        categoryFilter === 'all' ||
+        item.category === categoryFilter;
 
       const matchesStatus =
-        activeStatus === 'All' || item.status === activeStatus;
+        statusFilter === 'all' ||
+        item.status === statusFilter;
 
-      return matchesCategory && matchesStatus;
+      const matchesFavorite =
+        !favoriteOnly || item.favorite;
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesStatus &&
+        matchesFavorite
+      );
     });
-  }, [items, activeCategory, activeStatus]);
+  }, [
+    items,
+    search,
+    categoryFilter,
+    statusFilter,
+    favoriteOnly,
+  ]);
+
+  const compareItems = useMemo(
+    () =>
+      compareIds
+        .map((id) =>
+          items.find((item) => item.id === id)
+        )
+        .filter(Boolean),
+    [compareIds, items]
+  );
 
   const openAddModal = () => {
     setEditingItem(null);
-    setModalOpen(true);
+    setPageError('');
+    setShowModal(true);
   };
 
   const openEditModal = (item) => {
     setEditingItem(item);
-    setModalOpen(true);
+    setPageError('');
+    setShowModal(true);
   };
 
-  const closeModal = () => {
-    if (saving) {
-      return;
-    }
-
-    setModalOpen(false);
-    setEditingItem(null);
-  };
-
-  const handleSave = async (formData) => {
+  const handleSave = async (data) => {
     setSaving(true);
+    setPageError('');
 
     try {
       if (editingItem) {
-        await updateGear(editingItem.id, formData);
+        await updateGear(editingItem.id, data);
       } else {
-        await addGear(formData);
+        await addGear(data);
       }
 
-      closeModal();
+      setShowModal(false);
+      setEditingItem(null);
     } catch (saveError) {
-      console.error('Error saving baby gear:', saveError);
+      console.error(
+        'Error saving baby gear:',
+        saveError
+      );
+      setPageError(
+        'We could not save that product. Please try again.'
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  const handleBudgetToggle = async (item) => {
-    setBudgetActionId(item.id);
-
-    try {
-      if (item.budgetItemId) {
-        const shouldRemove = window.confirm(
-          `Remove "${item.name}" from your Budget?\n\nThe Baby Gear item will stay here.`
-        );
-
-        if (shouldRemove) {
-          await removeFromBudget(item);
-        }
-      } else {
-        await addToBudget(item);
-      }
-    } catch (budgetError) {
-      console.error('Error updating baby gear budget connection:', budgetError);
-    } finally {
-      setBudgetActionId(null);
-    }
-  };
-
   const handleDelete = async (item) => {
-    let deleteConnectedBudget = false;
+    const confirmed = window.confirm(
+      `Delete "${item.name}"?`
+    );
 
-    if (item.budgetItemId) {
-      const shouldDeleteBudget = window.confirm(
-        `"${item.name}" is connected to your Budget.\n\nClick OK to delete both the Baby Gear item and its planned Budget item. Click Cancel to keep both.`
-      );
-
-      if (!shouldDeleteBudget) {
-        return;
-      }
-
-      deleteConnectedBudget = true;
-    } else if (!window.confirm(`Delete "${item.name}"?`)) {
+    if (!confirmed) {
       return;
     }
 
     try {
-      await deleteGear(item.id, deleteConnectedBudget);
+      await deleteGear(item.id);
 
-      setSelectedItems((current) =>
+      setCompareIds((current) =>
         current.filter((id) => id !== item.id)
       );
     } catch (deleteError) {
-      console.error('Error deleting baby gear:', deleteError);
+      console.error(
+        'Error deleting baby gear:',
+        deleteError
+      );
+      setPageError(
+        'We could not delete that product.'
+      );
     }
   };
 
-  const toggleSelected = (itemId) => {
-    setSelectedItems((current) => {
+  const handleToggleFavorite = async (item) => {
+    try {
+      await updateGear(item.id, {
+        favorite: !item.favorite,
+      });
+    } catch (favoriteError) {
+      console.error(
+        'Error updating favorite:',
+        favoriteError
+      );
+      setPageError(
+        'We could not update that favorite.'
+      );
+    }
+  };
+
+  const handleAddToBudget = async (item) => {
+    try {
+      await addGearToBudget(item.id);
+    } catch (budgetError) {
+      console.error(
+        'Error adding gear to budget:',
+        budgetError
+      );
+      setPageError(
+        budgetError.message ||
+          'We could not add that product to your budget.'
+      );
+    }
+  };
+
+  const handleRemoveFromBudget = async (item) => {
+    try {
+      await removeGearFromBudget(item.id);
+    } catch (budgetError) {
+      console.error(
+        'Error removing gear from budget:',
+        budgetError
+      );
+      setPageError(
+        'We could not remove that product from your budget.'
+      );
+    }
+  };
+
+  const handleCompare = (itemId) => {
+    setCompareIds((current) => {
       if (current.includes(itemId)) {
         return current.filter((id) => id !== itemId);
       }
@@ -709,340 +1100,328 @@ function BabyGear() {
     });
   };
 
-  const comparisonItems = selectedItems
-    .map((id) => items.find((item) => item.id === id))
-    .filter(Boolean);
+  const clearFilters = () => {
+    setSearch('');
+    setCategoryFilter('all');
+    setStatusFilter('all');
+    setFavoriteOnly(false);
+  };
+
+  const activeFilterCount =
+    Number(categoryFilter !== 'all') +
+    Number(statusFilter !== 'all') +
+    Number(favoriteOnly);
 
   return (
     <div className="page baby-gear-page">
-      <div className="page-header">
+      <header className="gear-page-header">
         <div>
-          <p className="page-eyebrow">RESEARCH & COMPARE</p>
+          <p className="page-eyebrow">
+            Research & Compare
+          </p>
           <h1>Baby Gear</h1>
           <p className="page-description">
-            Research the things we might want before we actually buy anything.
+            Research the things you might want,
+            compare your options, and keep track of
+            what you both think.
           </p>
         </div>
 
         <button
-          className="primary-button"
+          type="button"
+          className="primary-button gear-add-button"
           onClick={openAddModal}
         >
-          + Add Gear
+          <span>+</span>
+          Add Product
         </button>
-      </div>
+      </header>
 
-      <div className="gear-stats">
-        <div className="stat-card">
-          <span className="stat-number">{stats.total}</span>
-          <span className="stat-label">Total</span>
+      {(error || pageError) && (
+        <div className="gear-error">
+          <span>{pageError || error}</span>
+          <button
+            type="button"
+            onClick={() => setPageError('')}
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
         </div>
+      )}
 
-        <div className="stat-card">
-          <span className="stat-number">{stats.researching}</span>
-          <span className="stat-label">Researching</span>
-        </div>
-
-        <div className="stat-card">
-          <span className="stat-number">{stats.considering}</span>
-          <span className="stat-label">Considering</span>
-        </div>
-
-        <div className="stat-card">
-          <span className="stat-number">{stats.decided}</span>
-          <span className="stat-label">Decided</span>
-        </div>
-      </div>
-
-      <div className="gear-filter-section">
-        <div className="gear-filter-group">
-          <span className="gear-filter-label">Category</span>
-
-          <div className="board-pills">
-            {['All', ...gearCategories].map((category) => (
-              <button
-                key={category}
-                className={`filter-pill ${
-                  activeCategory === category ? 'active' : ''
-                }`}
-                onClick={() => setActiveCategory(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="gear-filter-group">
-          <span className="gear-filter-label">Status</span>
-
-          <div className="board-pills">
-            {['All', ...gearStatuses].map((status) => (
-              <button
-                key={status}
-                className={`filter-pill ${
-                  activeStatus === status ? 'active' : ''
-                }`}
-                onClick={() => setActiveStatus(status)}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {selectedItems.length > 0 && (
-        <div className="gear-comparison-bar">
-          <div>
-            <strong>{selectedItems.length} selected</strong>
-            <span>
-              {selectedItems.length < 2
-                ? 'Select at least 2 items to compare.'
-                : 'Compare up to 4 products side by side.'}
+      <section className="gear-stats-grid">
+        <div className="gear-stat-card gear-stat-total">
+          <div className="gear-stat-icon">✦</div>
+          <div className="gear-stat-content">
+            <span className="gear-stat-label">
+              Products
             </span>
+            <strong>{stats.total}</strong>
+            <small>
+              {stats.total === 1
+                ? 'product in your research'
+                : 'products in your research'}
+            </small>
+          </div>
+        </div>
+
+        <div className="gear-stat-card gear-stat-researching">
+          <div className="gear-stat-icon">◌</div>
+          <div className="gear-stat-content">
+            <span className="gear-stat-label">
+              Researching
+            </span>
+            <strong>{stats.researching}</strong>
+            <small>Still exploring</small>
+          </div>
+        </div>
+
+        <div className="gear-stat-card gear-stat-considering">
+          <div className="gear-stat-icon">♡</div>
+          <div className="gear-stat-content">
+            <span className="gear-stat-label">
+              Considering
+            </span>
+            <strong>{stats.considering}</strong>
+            <small>On our shortlist</small>
+          </div>
+        </div>
+
+        <div className="gear-stat-card gear-stat-budgeted">
+          <div className="gear-stat-icon">$</div>
+          <div className="gear-stat-content">
+            <span className="gear-stat-label">
+              Budgeted
+            </span>
+            <strong>{stats.budgeted}</strong>
+            <small>Connected to Budget</small>
+          </div>
+        </div>
+      </section>
+
+      {compareItems.length > 0 && (
+        <section className="gear-compare-bar">
+          <div>
+            <span className="gear-compare-count">
+              {compareItems.length} of 4
+            </span>
+            <div>
+              <strong>
+                Products selected for comparison
+              </strong>
+              <small>
+                Add up to four products to compare
+                side by side.
+              </small>
+            </div>
           </div>
 
-          <div className="gear-comparison-bar-actions">
+          <div className="gear-compare-bar-actions">
             <button
+              type="button"
               className="secondary-button"
-              onClick={() => setSelectedItems([])}
+              onClick={() => setCompareIds([])}
             >
               Clear
             </button>
 
             <button
+              type="button"
               className="primary-button"
-              onClick={() => setComparisonOpen(true)}
-              disabled={selectedItems.length < 2}
+              onClick={() => setShowCompare(true)}
             >
-              Compare Selected
+              Compare Products
             </button>
           </div>
-        </div>
+        </section>
       )}
 
-      {loading && (
-        <div className="empty-state">
-          <p>Loading baby gear...</p>
+      <section className="gear-toolbar">
+        <div className="gear-search">
+          <span>⌕</span>
+          <input
+            type="search"
+            value={search}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
+            placeholder="Search products, brands, notes..."
+          />
         </div>
-      )}
 
-      {error && (
-        <div className="error-message">
-          {error}
-        </div>
-      )}
+        <div className="gear-toolbar-controls">
+          <select
+            value={categoryFilter}
+            onChange={(event) =>
+              setCategoryFilter(event.target.value)
+            }
+          >
+            <option value="all">
+              All Categories
+            </option>
+            {gearCategories.map((category) => (
+              <option
+                key={category}
+                value={category}
+              >
+                {category}
+              </option>
+            ))}
+          </select>
 
-      {!loading && !error && filteredItems.length === 0 && (
-        <div className="empty-state">
-          <div className="empty-state-icon">♡</div>
-          <h2>No gear here yet</h2>
-          <p>
-            Start saving products you want to research and compare.
-          </p>
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              setStatusFilter(event.target.value)
+            }
+          >
+            <option value="all">
+              All Statuses
+            </option>
+            {gearStatuses.map((status) => (
+              <option
+                key={status}
+                value={status}
+              >
+                {status}
+              </option>
+            ))}
+          </select>
 
           <button
-            className="primary-button"
-            onClick={openAddModal}
+            type="button"
+            className={`gear-filter-button ${
+              favoriteOnly ? 'active' : ''
+            }`}
+            onClick={() =>
+              setFavoriteOnly((current) => !current)
+            }
           >
-            + Add Your First Item
+            <span>★</span>
+            Favorites
+          </button>
+        </div>
+      </section>
+
+      {activeFilterCount > 0 && (
+        <div className="gear-filter-summary">
+          <span>
+            {activeFilterCount}{' '}
+            {activeFilterCount === 1
+              ? 'filter'
+              : 'filters'}{' '}
+            applied
+          </span>
+
+          <button
+            type="button"
+            onClick={clearFilters}
+          >
+            Clear filters
           </button>
         </div>
       )}
 
-      {!loading && !error && filteredItems.length > 0 && (
-        <div className="baby-gear-grid">
-          {filteredItems.map((item) => {
-            const isSelected = selectedItems.includes(item.id);
-            const budgetLoading = budgetActionId === item.id;
-
-            return (
-              <article
-                className={`baby-gear-card ${
-                  isSelected ? 'selected' : ''
-                }`}
-                key={item.id}
-              >
-                <div className="baby-gear-image-wrapper">
-                  {item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.name}
-                      className="baby-gear-image"
-                    />
-                  ) : (
-                    <div className="baby-gear-no-image">
-                      <span>♡</span>
-                      <p>No image added</p>
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    className={`gear-select-button ${
-                      isSelected ? 'selected' : ''
-                    }`}
-                    onClick={() => toggleSelected(item.id)}
-                    aria-label={
-                      isSelected
-                        ? 'Remove from comparison'
-                        : 'Add to comparison'
-                    }
-                  >
-                    {isSelected ? '✓' : '+'}
-                  </button>
-
-                  {item.favorite && (
-                    <span className="baby-gear-favorite">
-                      ♥
-                    </span>
-                  )}
-                </div>
-
-                <div className="baby-gear-card-content">
-                  <div className="baby-gear-card-top">
-                    <span className="baby-gear-category">
-                      {item.category}
-                    </span>
-
-                    <span
-                      className={`gear-status gear-status-${item.status
-                        ?.toLowerCase()
-                        .replace(/\s+/g, '-')}`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-
-                  <h2>{item.name}</h2>
-
-                  {item.brand && (
-                    <p className="baby-gear-brand">
-                      {item.brand}
-                    </p>
-                  )}
-
-                  {item.price != null && (
-                    <p className="baby-gear-price">
-                      ${Number(item.price).toLocaleString()}
-                    </p>
-                  )}
-
-                  <div className="baby-gear-ratings">
-                    <div>
-                      <span>Maddie</span>
-                      <strong>
-                        {item.maddieRating
-                          ? `${'★'.repeat(item.maddieRating)}${'☆'.repeat(
-                              5 - item.maddieRating
-                            )}`
-                          : 'Not rated'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Nick</span>
-                      <strong>
-                        {item.nickRating
-                          ? `${'★'.repeat(item.nickRating)}${'☆'.repeat(
-                              5 - item.nickRating
-                            )}`
-                          : 'Not rated'}
-                      </strong>
-                    </div>
-                  </div>
-
-                  {item.notes && (
-                    <p className="baby-gear-notes">
-                      {item.notes}
-                    </p>
-                  )}
-
-                  <div className="baby-gear-budget">
-                    <div>
-                      <span className="baby-gear-budget-label">
-                        Budget
-                      </span>
-
-                      {item.budgetItemId ? (
-                        <span className="baby-gear-budget-connected">
-                          ✓ Added to Budget
-                        </span>
-                      ) : (
-                        <span className="baby-gear-budget-unconnected">
-                          Not in Budget
-                        </span>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      className={
-                        item.budgetItemId
-                          ? 'baby-gear-budget-button connected'
-                          : 'baby-gear-budget-button'
-                      }
-                      onClick={() => handleBudgetToggle(item)}
-                      disabled={budgetLoading}
-                    >
-                      {budgetLoading
-                        ? 'Saving...'
-                        : item.budgetItemId
-                          ? 'Remove'
-                          : '+ Add to Budget'}
-                    </button>
-                  </div>
-
-                  <div className="baby-gear-card-footer">
-                    <div className="baby-gear-card-actions">
-                      {item.productUrl && (
-                        <a
-                          href={item.productUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="baby-gear-source-link"
-                        >
-                          View product ↗
-                        </a>
-                      )}
-
-                      <button
-                        type="button"
-                        className="baby-gear-action-button"
-                        onClick={() => openEditModal(item)}
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        type="button"
-                        className="baby-gear-action-button"
-                        onClick={() => handleDelete(item)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+      {loading ? (
+        <div className="gear-empty-state">
+          <div className="gear-empty-icon">✦</div>
+          <h2>Loading your baby gear...</h2>
+          <p>
+            Pulling together everything you're
+            researching.
+          </p>
         </div>
+      ) : visibleItems.length === 0 ? (
+        <div className="gear-empty-state">
+          <div className="gear-empty-icon">
+            {items.length === 0 ? '✦' : '⌕'}
+          </div>
+
+          <h2>
+            {items.length === 0
+              ? 'Nothing here yet'
+              : 'No products found'}
+          </h2>
+
+          <p>
+            {items.length === 0
+              ? 'Start saving products as you research what you might want for your baby.'
+              : 'Try changing your search or filters.'}
+          </p>
+
+          {items.length === 0 ? (
+            <button
+              type="button"
+              className="primary-button"
+              onClick={openAddModal}
+            >
+              Add Your First Product
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
+      ) : (
+        <section className="gear-card-grid">
+          {visibleItems.map((item) => (
+            <GearCard
+              key={item.id}
+              item={item}
+              budgetItem={
+                item.budgetItemId
+                  ? getBudgetItem(item.budgetItemId)
+                  : null
+              }
+              onEdit={openEditModal}
+              onDelete={handleDelete}
+              onToggleFavorite={handleToggleFavorite}
+              onAddToBudget={() =>
+                handleAddToBudget(item)
+              }
+              onRemoveFromBudget={() =>
+                handleRemoveFromBudget(item)
+              }
+              onViewBudget={() =>
+                navigate('/budget')
+              }
+              onCompare={handleCompare}
+              isComparing={compareIds.includes(
+                item.id
+              )}
+              compareDisabled={
+                compareIds.length >= 4 &&
+                !compareIds.includes(item.id)
+              }
+            />
+          ))}
+        </section>
       )}
 
       <GearModal
-        isOpen={modalOpen}
-        onClose={closeModal}
-        onSave={handleSave}
+        isOpen={showModal}
         editingItem={editingItem}
+        onClose={() => {
+          if (!saving) {
+            setShowModal(false);
+            setEditingItem(null);
+          }
+        }}
+        onSave={handleSave}
         saving={saving}
       />
 
-      {comparisonOpen && (
-        <ComparisonModal
-          items={comparisonItems}
-          onClose={() => setComparisonOpen(false)}
+      {showCompare && (
+        <ComparePanel
+          items={compareItems}
+          onRemove={handleCompare}
+          onClose={() => setShowCompare(false)}
         />
       )}
     </div>

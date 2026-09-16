@@ -15,6 +15,15 @@ const emptyForm = {
   notes: '',
 };
 
+const defaultStats = {
+  total: 0,
+  planned: 0,
+  spent: 0,
+  remaining: 0,
+  purchased: 0,
+  skipped: 0,
+};
+
 function formatCurrency(amount) {
   return `$${Number(amount || 0).toLocaleString(undefined, {
     minimumFractionDigits: 2,
@@ -56,7 +65,8 @@ function BudgetModal({
     return null;
   }
 
-  const isBabyGearItem = editingItem?.sourceType === 'babyGear';
+  const isBabyGearItem =
+    editingItem?.sourceType === 'babyGear';
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -78,9 +88,13 @@ function BudgetModal({
       ...form,
       name: form.name.trim(),
       plannedAmount:
-        form.plannedAmount === '' ? 0 : Number(form.plannedAmount),
+        form.plannedAmount === ''
+          ? 0
+          : Number(form.plannedAmount),
       actualAmount:
-        form.actualAmount === '' ? null : Number(form.actualAmount),
+        form.actualAmount === ''
+          ? null
+          : Number(form.actualAmount),
     });
   };
 
@@ -88,7 +102,10 @@ function BudgetModal({
     <div
       className="budget-modal-overlay"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !saving) {
+        if (
+          event.target === event.currentTarget &&
+          !saving
+        ) {
           onClose();
         }
       }}
@@ -97,10 +114,15 @@ function BudgetModal({
         <div className="budget-modal-header">
           <div>
             <p className="budget-modal-eyebrow">
-              {editingItem ? 'UPDATE EXPENSE' : 'ADD EXPENSE'}
+              {editingItem
+                ? 'UPDATE EXPENSE'
+                : 'ADD EXPENSE'}
             </p>
+
             <h2>
-              {editingItem ? 'Edit Budget Item' : 'Add Budget Item'}
+              {editingItem
+                ? 'Edit Budget Item'
+                : 'Add Budget Item'}
             </h2>
           </div>
 
@@ -116,12 +138,20 @@ function BudgetModal({
 
         {isBabyGearItem && (
           <div className="budget-linked-notice">
-            <strong>This item is connected to Baby Gear.</strong>
+            <strong>
+              This item is connected to Baby Gear.
+            </strong>
+
             <p>
-              The planned amount comes from the product price in Baby Gear.
-              To change that amount, edit the product there.
+              The planned amount comes from the product
+              price in Baby Gear. To change that amount,
+              edit the product there.
             </p>
-            <Link to="/baby-gear" onClick={onClose}>
+
+            <Link
+              to="/baby-gear"
+              onClick={onClose}
+            >
               View Baby Gear →
             </Link>
           </div>
@@ -131,6 +161,7 @@ function BudgetModal({
           <div className="budget-form-grid">
             <label className="budget-form-field budget-form-field-full">
               <span>What are we budgeting for?</span>
+
               <input
                 type="text"
                 name="name"
@@ -144,6 +175,7 @@ function BudgetModal({
 
             <label className="budget-form-field">
               <span>Category</span>
+
               <select
                 name="category"
                 value={form.category}
@@ -151,7 +183,10 @@ function BudgetModal({
                 disabled={isBabyGearItem}
               >
                 {budgetCategories.map((category) => (
-                  <option key={category} value={category}>
+                  <option
+                    key={category}
+                    value={category}
+                  >
                     {category}
                   </option>
                 ))}
@@ -160,13 +195,17 @@ function BudgetModal({
 
             <label className="budget-form-field">
               <span>Status</span>
+
               <select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
               >
                 {budgetStatuses.map((status) => (
-                  <option key={status} value={status}>
+                  <option
+                    key={status}
+                    value={status}
+                  >
                     {status}
                   </option>
                 ))}
@@ -175,8 +214,10 @@ function BudgetModal({
 
             <label className="budget-form-field">
               <span>Planned amount</span>
+
               <div className="budget-price-input">
                 <span>$</span>
+
                 <input
                   type="number"
                   name="plannedAmount"
@@ -192,14 +233,16 @@ function BudgetModal({
 
             <label className="budget-form-field">
               <span>Actual amount</span>
+
               <div className="budget-price-input">
                 <span>$</span>
+
                 <input
                   type="number"
                   name="actualAmount"
                   min="0"
                   step="0.01"
-                  value={form.actualAmount}
+                  value={form.actualAmount ?? ''}
                   onChange={handleChange}
                   placeholder="Not purchased yet"
                 />
@@ -208,6 +251,7 @@ function BudgetModal({
 
             <label className="budget-form-field budget-form-field-full">
               <span>Notes</span>
+
               <textarea
                 name="notes"
                 value={form.notes}
@@ -230,7 +274,9 @@ function BudgetModal({
             <button
               type="submit"
               className="primary-button"
-              disabled={saving || !form.name.trim()}
+              disabled={
+                saving || !form.name.trim()
+              }
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
@@ -243,8 +289,8 @@ function BudgetModal({
 
 function Budget() {
   const {
-    items,
-    stats,
+    items = [],
+    stats: contextStats,
     loading,
     error,
     addBudgetItem,
@@ -252,23 +298,43 @@ function Budget() {
     deleteBudgetItem,
   } = useBudget();
 
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeStatus, setActiveStatus] = useState('All');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const stats = contextStats || defaultStats;
+
+  const [activeCategory, setActiveCategory] =
+    useState('All');
+
+  const [activeStatus, setActiveStatus] =
+    useState('All');
+
+  const [modalOpen, setModalOpen] =
+    useState(false);
+
+  const [editingItem, setEditingItem] =
+    useState(null);
+
+  const [saving, setSaving] =
+    useState(false);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       const matchesCategory =
-        activeCategory === 'All' || item.category === activeCategory;
+        activeCategory === 'All' ||
+        item.category === activeCategory;
 
       const matchesStatus =
-        activeStatus === 'All' || item.status === activeStatus;
+        activeStatus === 'All' ||
+        item.status === activeStatus;
 
-      return matchesCategory && matchesStatus;
+      return (
+        matchesCategory &&
+        matchesStatus
+      );
     });
-  }, [items, activeCategory, activeStatus]);
+  }, [
+    items,
+    activeCategory,
+    activeStatus,
+  ]);
 
   const openAddModal = () => {
     setEditingItem(null);
@@ -294,7 +360,10 @@ function Budget() {
 
     try {
       if (editingItem) {
-        await updateBudgetItem(editingItem.id, formData);
+        await updateBudgetItem(
+          editingItem.id,
+          formData
+        );
       } else {
         await addBudgetItem(formData);
       }
@@ -302,7 +371,10 @@ function Budget() {
       setModalOpen(false);
       setEditingItem(null);
     } catch (saveError) {
-      console.error('Error saving budget item:', saveError);
+      console.error(
+        'Error saving budget item:',
+        saveError
+      );
     } finally {
       setSaving(false);
     }
@@ -320,14 +392,19 @@ function Budget() {
     try {
       await deleteBudgetItem(item.id);
     } catch (deleteError) {
-      console.error('Error deleting budget item:', deleteError);
+      console.error(
+        'Error deleting budget item:',
+        deleteError
+      );
     }
   };
 
   const handleMarkPurchased = async (item) => {
     const actualAmount = window.prompt(
       `What did you actually pay for "${item.name}"?`,
-      item.actualAmount ?? item.plannedAmount ?? ''
+      item.actualAmount ??
+        item.plannedAmount ??
+        ''
     );
 
     if (actualAmount === null) {
@@ -336,7 +413,10 @@ function Budget() {
 
     const amount = Number(actualAmount);
 
-    if (Number.isNaN(amount) || amount < 0) {
+    if (
+      Number.isNaN(amount) ||
+      amount < 0
+    ) {
       return;
     }
 
@@ -357,14 +437,20 @@ function Budget() {
     <div className="page budget-page">
       <div className="page-header">
         <div>
-          <p className="page-eyebrow">PLAN & TRACK</p>
+          <p className="page-eyebrow">
+            PLAN & TRACK
+          </p>
+
           <h1>Budget</h1>
+
           <p className="page-description">
-            Keep track of what we expect to spend and what we actually spend.
+            Keep track of what we expect to spend and
+            what we actually spend.
           </p>
         </div>
 
         <button
+          type="button"
           className="primary-button"
           onClick={openAddModal}
         >
@@ -375,68 +461,113 @@ function Budget() {
       <div className="budget-summary-grid">
         <div className="budget-summary-card budget-summary-planned">
           <span>Planned</span>
-          <strong>{formatCurrency(stats.planned)}</strong>
-          <small>{stats.total} budget items</small>
+
+          <strong>
+            {formatCurrency(stats.planned)}
+          </strong>
+
+          <small>
+            {stats.total} budget items
+          </small>
         </div>
 
         <div className="budget-summary-card budget-summary-actual">
           <span>Spent</span>
-          <strong>{formatCurrency(stats.spent)}</strong>
-          <small>{stats.purchased} purchased</small>
+
+          <strong>
+            {formatCurrency(stats.spent)}
+          </strong>
+
+          <small>
+            {stats.purchased} purchased
+          </small>
         </div>
 
         <div className="budget-summary-card budget-summary-remaining">
           <span>Still planned</span>
-          <strong>{formatCurrency(stats.remaining)}</strong>
+
+          <strong>
+            {formatCurrency(stats.remaining)}
+          </strong>
+
           <small>
-            {stats.total - stats.purchased - stats.skipped} not purchased
+            {Math.max(
+              0,
+              stats.total -
+                stats.purchased -
+                stats.skipped
+            )}{' '}
+            not purchased
           </small>
         </div>
 
         <div className="budget-summary-card budget-summary-gear">
           <span>Baby Gear</span>
+
           <strong>
             {
               items.filter(
-                (item) => item.sourceType === 'babyGear'
+                (item) =>
+                  item.sourceType === 'babyGear'
               ).length
             }
           </strong>
-          <small>connected items</small>
+
+          <small>
+            connected items
+          </small>
         </div>
       </div>
 
       <div className="budget-gear-callout">
         <div>
-          <span className="budget-gear-callout-icon">□</span>
+          <span className="budget-gear-callout-icon">
+            □
+          </span>
 
           <div>
-            <strong>Researching something?</strong>
+            <strong>
+              Researching something?
+            </strong>
+
             <p>
-              Add it in Baby Gear first, then connect it to your Budget when
+              Add it in Baby Gear first, then
+              connect it to your Budget when
               you're ready.
             </p>
           </div>
         </div>
 
-        <Link to="/baby-gear" className="secondary-button">
+        <Link
+          to="/baby-gear"
+          className="secondary-button"
+        >
           View Baby Gear
         </Link>
       </div>
 
       <div className="budget-filter-section">
         <div className="budget-filter-group">
-          <span className="budget-filter-label">Category</span>
+          <span className="budget-filter-label">
+            Category
+          </span>
 
           <div className="board-pills">
-            {['All', ...budgetCategories].map((category) => (
+            {[
+              'All',
+              ...budgetCategories,
+            ].map((category) => (
               <button
                 key={category}
                 type="button"
                 className={`filter-pill ${
-                  activeCategory === category ? 'active' : ''
+                  activeCategory === category
+                    ? 'active'
+                    : ''
                 }`}
-                onClick={() => setActiveCategory(category)}
+                onClick={() =>
+                  setActiveCategory(category)
+                }
               >
                 {category}
               </button>
@@ -445,17 +576,26 @@ function Budget() {
         </div>
 
         <div className="budget-filter-group">
-          <span className="budget-filter-label">Status</span>
+          <span className="budget-filter-label">
+            Status
+          </span>
 
           <div className="board-pills">
-            {['All', ...budgetStatuses].map((status) => (
+            {[
+              'All',
+              ...budgetStatuses,
+            ].map((status) => (
               <button
                 key={status}
                 type="button"
                 className={`filter-pill ${
-                  activeStatus === status ? 'active' : ''
+                  activeStatus === status
+                    ? 'active'
+                    : ''
                 }`}
-                onClick={() => setActiveStatus(status)}
+                onClick={() =>
+                  setActiveStatus(status)
+                }
               >
                 {status}
               </button>
@@ -476,156 +616,195 @@ function Budget() {
         </div>
       )}
 
-      {!loading && !error && filteredItems.length === 0 && (
-        <div className="empty-state">
-          <div className="empty-state-icon">$</div>
+      {!loading &&
+        !error &&
+        filteredItems.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              $
+            </div>
 
-          <h2>No budget items yet</h2>
+            <h2>No budget items yet</h2>
 
-          <p>
-            Add expenses directly here or connect something you've decided on
-            in Baby Gear.
-          </p>
+            <p>
+              Add expenses directly here or connect
+              something you've decided on in Baby Gear.
+            </p>
 
-          <button
-            className="primary-button"
-            onClick={openAddModal}
-          >
-            + Add Your First Expense
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              className="primary-button"
+              onClick={openAddModal}
+            >
+              + Add Your First Expense
+            </button>
+          </div>
+        )}
 
-      {!loading && !error && filteredItems.length > 0 && (
-        <div className="budget-list">
-          {filteredItems.map((item) => {
-            const planned = Number(item.plannedAmount) || 0;
+      {!loading &&
+        !error &&
+        filteredItems.length > 0 && (
+          <div className="budget-list">
+            {filteredItems.map((item) => {
+              const planned =
+                Number(item.plannedAmount) || 0;
 
-            const actual =
-              item.actualAmount == null
-                ? null
-                : Number(item.actualAmount);
+              const actual =
+                item.actualAmount == null
+                  ? null
+                  : Number(item.actualAmount);
 
-            const difference =
-              actual == null ? null : actual - planned;
+              const difference =
+                actual == null
+                  ? null
+                  : actual - planned;
 
-            return (
-              <article className="budget-card" key={item.id}>
-                <div className="budget-card-main">
-                  <div className="budget-card-heading">
-                    <div>
-                      <div className="budget-card-meta">
-                        <span className="budget-category">
-                          {item.category}
-                        </span>
-
-                        {item.sourceType === 'babyGear' && (
-                          <span className="budget-source">
-                            Baby Gear
+              return (
+                <article
+                  className="budget-card"
+                  key={item.id}
+                >
+                  <div className="budget-card-main">
+                    <div className="budget-card-heading">
+                      <div>
+                        <div className="budget-card-meta">
+                          <span className="budget-category">
+                            {item.category}
                           </span>
-                        )}
+
+                          {item.sourceType ===
+                            'babyGear' && (
+                            <span className="budget-source">
+                              Baby Gear
+                            </span>
+                          )}
+                        </div>
+
+                        <h2>{item.name}</h2>
                       </div>
 
-                      <h2>{item.name}</h2>
+                      <span
+                        className={`budget-status budget-status-${item.status
+                          ?.toLowerCase()
+                          .replace(
+                            /\s+/g,
+                            '-'
+                          )}`}
+                      >
+                        {item.status}
+                      </span>
                     </div>
 
-                    <span
-                      className={`budget-status budget-status-${item.status
-                        ?.toLowerCase()
-                        .replace(/\s+/g, '-')}`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-
-                  <div className="budget-amounts">
-                    <div>
-                      <span>Planned</span>
-                      <strong>
-                        {formatCurrency(planned)}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Actual</span>
-                      <strong>
-                        {actual == null
-                          ? 'Not purchased'
-                          : formatCurrency(actual)}
-                      </strong>
-                    </div>
-
-                    {difference != null && (
+                    <div className="budget-amounts">
                       <div>
-                        <span>Difference</span>
+                        <span>Planned</span>
 
-                        <strong
-                          className={
-                            difference > 0
-                              ? 'budget-over'
-                              : difference < 0
-                                ? 'budget-under'
-                                : ''
-                          }
-                        >
-                          {difference > 0 ? '+' : ''}
-                          {formatCurrency(difference)}
+                        <strong>
+                          {formatCurrency(
+                            planned
+                          )}
                         </strong>
+                      </div>
+
+                      <div>
+                        <span>Actual</span>
+
+                        <strong>
+                          {actual == null
+                            ? 'Not purchased'
+                            : formatCurrency(
+                                actual
+                              )}
+                        </strong>
+                      </div>
+
+                      {difference != null && (
+                        <div>
+                          <span>
+                            Difference
+                          </span>
+
+                          <strong
+                            className={
+                              difference > 0
+                                ? 'budget-over'
+                                : difference < 0
+                                  ? 'budget-under'
+                                  : ''
+                            }
+                          >
+                            {difference > 0
+                              ? '+'
+                              : ''}
+                            {formatCurrency(
+                              difference
+                            )}
+                          </strong>
+                        </div>
+                      )}
+                    </div>
+
+                    {item.notes && (
+                      <p className="budget-notes">
+                        {item.notes}
+                      </p>
+                    )}
+
+                    {item.sourceType ===
+                      'babyGear' && (
+                      <div className="budget-connected">
+                        <span>
+                          Connected to Baby Gear
+                        </span>
+
+                        <Link to="/baby-gear">
+                          View gear ↗
+                        </Link>
                       </div>
                     )}
                   </div>
 
-                  {item.notes && (
-                    <p className="budget-notes">
-                      {item.notes}
-                    </p>
-                  )}
+                  <div className="budget-card-actions">
+                    {item.status !==
+                      'Purchased' && (
+                      <button
+                        type="button"
+                        className="primary-button"
+                        onClick={() =>
+                          handleMarkPurchased(
+                            item
+                          )
+                        }
+                      >
+                        Mark Purchased
+                      </button>
+                    )}
 
-                  {item.sourceType === 'babyGear' && (
-                    <div className="budget-connected">
-                      <span>
-                        Connected to Baby Gear
-                      </span>
-
-                      <Link to="/baby-gear">
-                        View gear ↗
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                <div className="budget-card-actions">
-                  {item.status !== 'Purchased' && (
                     <button
                       type="button"
-                      className="primary-button"
-                      onClick={() => handleMarkPurchased(item)}
+                      className="budget-action-button"
+                      onClick={() =>
+                        openEditModal(item)
+                      }
                     >
-                      Mark Purchased
+                      Edit
                     </button>
-                  )}
 
-                  <button
-                    type="button"
-                    className="budget-action-button"
-                    onClick={() => openEditModal(item)}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    type="button"
-                    className="budget-action-button"
-                    onClick={() => handleDelete(item)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+                    <button
+                      type="button"
+                      className="budget-action-button"
+                      onClick={() =>
+                        handleDelete(item)
+                      }
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
 
       <BudgetModal
         isOpen={modalOpen}
