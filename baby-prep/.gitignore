@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#Firestore env
+.env
+.env.local
+.env.*.local
