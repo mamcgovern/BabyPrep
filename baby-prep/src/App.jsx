@@ -2,8 +2,10 @@ import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Tasks from './pages/Tasks';
+import Resources from './pages/Resources';
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
+import { ResourceProvider } from './context/ResourceContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -109,16 +111,7 @@ function AppShell() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/tasks" element={<Tasks />} />
-
-          <Route
-            path="/resources"
-            element={
-              <PlaceholderPage
-                title="Books & Resources"
-                description="Keep track of what you're reading, watching, listening to, and learning together."
-              />
-            }
-          />
+          <Route path="/resources" element={<Resources />} />
 
           <Route
             path="/registry"
@@ -232,7 +225,9 @@ function ProtectedApp() {
 
   return (
     <TaskProvider>
-      <AppShell />
+      <ResourceProvider>
+        <AppShell />
+      </ResourceProvider>
     </TaskProvider>
   );
 }
