@@ -3,6 +3,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Tasks from './pages/Tasks';
 import { useAuth } from './context/AuthContext';
+import { TaskProvider } from './context/TaskContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -229,7 +230,11 @@ function ProtectedApp() {
     return <Navigate to="/login" replace />;
   }
 
-  return <AppShell />;
+  return (
+    <TaskProvider>
+      <AppShell />
+    </TaskProvider>
+  );
 }
 
 function App() {

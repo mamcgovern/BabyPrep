@@ -1,164 +1,199 @@
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import ProgressBar from '../components/ProgressBar';
 import { useTasks } from '../context/TaskContext';
 
 function Dashboard() {
-  const { tasks, stats } = useTasks();
+  const { tasks, stats, loading } = useTasks();
 
-  const upcomingTasks = tasks
-    .filter((task) => task.status !== 'Complete')
-    .slice(0, 3);
+  const activeTasks = tasks.filter(
+    (task) => task.status !== 'Complete'
+  );
+
+  const highPriorityTasks = activeTasks
+    .filter((task) => task.priority === 'High')
+    .slice(0, 4);
+
+  const recentTasks = activeTasks.slice(0, 5);
+
+  if (loading) {
+    return (
+      <div className="page">
+        <div className="dashboard-loading">
+          <span>Loading your plans...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page dashboard-page">
-      <div className="welcome">
+      <div className="dashboard-header">
         <div>
-          <p className="eyebrow">MADDIE & NICK</p>
-          <h1>Getting ready for baby</h1>
+          <p className="eyebrow">WELCOME BACK</p>
+          <h1>Before Baby</h1>
           <p className="page-description">
-            Our little command center for everything we want to figure out
-            before our family grows.
+            A little space for Maddie & Nick to plan, research, and get ready
+            for whatever comes next.
           </p>
         </div>
 
-        <NavLink to="/tasks" className="primary-button">
-          View our tasks
-        </NavLink>
+        <Link to="/tasks" className="primary-button">
+          View all tasks
+        </Link>
       </div>
 
-      <section className="countdown-grid">
-        <div className="countdown-card">
-          <div className="card-label">COUNTDOWN</div>
+      <section className="dashboard-hero">
+        <div className="dashboard-hero-content">
+          <p className="eyebrow">YOUR PROGRESS</p>
+          <div className="progress-heading">
+            <h2>{stats.percentage}%</h2>
+            <span>ready so far</span>
+          </div>
 
-          <div className="countdown-number">—</div>
+          <ProgressBar percentage={stats.percentage} />
 
-          <p className="countdown-caption">
-            days until we start trying
+          <p className="progress-description">
+            {stats.complete === 0
+              ? 'You are just getting started. There is plenty of time to figure this out together.'
+              : `${stats.complete} of ${stats.total} preparation tasks are complete.`}
           </p>
         </div>
 
-        <div className="countdown-card accent">
-          <div className="card-label">EARLIEST POSSIBILITY</div>
+        <div className="dashboard-hero-mark">✦</div>
+      </section>
 
-          <div className="countdown-number">—</div>
+      <section className="dashboard-stats">
+        <div className="dashboard-stat-card">
+          <span className="stat-label">TOTAL TASKS</span>
+          <strong>{stats.total}</strong>
+          <span className="stat-detail">things to prepare</span>
+        </div>
 
-          <p className="countdown-caption">
-            We'll add our dates when we're ready.
-          </p>
+        <div className="dashboard-stat-card">
+          <span className="stat-label">IN PROGRESS</span>
+          <strong>{stats.inProgress}</strong>
+          <span className="stat-detail">currently underway</span>
+        </div>
+
+        <div className="dashboard-stat-card">
+          <span className="stat-label">NOT STARTED</span>
+          <strong>{stats.notStarted}</strong>
+          <span className="stat-detail">still on the list</span>
+        </div>
+
+        <div className="dashboard-stat-card">
+          <span className="stat-label">COMPLETE</span>
+          <strong>{stats.complete}</strong>
+          <span className="stat-detail">already checked off</span>
         </div>
       </section>
 
-      <section className="dashboard-grid">
-        <div className="dashboard-card">
-          <div className="card-heading">
+      <div className="dashboard-grid">
+        <section className="dashboard-card">
+          <div className="dashboard-card-header">
             <div>
-              <span className="card-label">OUR PREP</span>
-              <h2>Getting there!</h2>
+              <p className="eyebrow">HIGH PRIORITY</p>
+              <h2>Things to focus on</h2>
             </div>
 
-            <span className="progress-percent">
-              {stats.percentage}%
-            </span>
+            <Link to="/tasks">See all</Link>
           </div>
 
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${stats.percentage}%` }}
-            />
+          {highPriorityTasks.length === 0 ? (
+            <div className="dashboard-empty">
+              <span>✦</span>
+              <p>No high-priority tasks right now.</p>
+            </div>
+          ) : (
+            <div className="dashboard-task-list">
+              {highPriorityTasks.map((task) => (
+                <Link
+                  key={task.id}
+                  to="/tasks"
+                  className="dashboard-task"
+                >
+                  <div className="dashboard-task-icon">
+                    {task.status === 'In Progress' ? '◐' : '○'}
+                  </div>
+
+                  <div className="dashboard-task-content">
+                    <strong>{task.title}</strong>
+                    <span>
+                      {task.assignedTo} · {task.phase}
+                    </span>
+                  </div>
+
+                  <span className={`task-status ${task.status.toLowerCase().replace(' ', '-')}`}>
+                    {task.status}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="dashboard-card">
+          <div className="dashboard-card-header">
+            <div>
+              <p className="eyebrow">UP NEXT</p>
+              <h2>Our preparation list</h2>
+            </div>
+
+            <Link to="/tasks">Manage</Link>
           </div>
 
-          <div className="progress-details">
-            <span>{stats.complete} completed</span>
-            <span>{stats.total} total tasks</span>
-          </div>
+          {recentTasks.length === 0 ? (
+            <div className="dashboard-empty">
+              <span>✓</span>
+              <p>Everything is complete!</p>
+            </div>
+          ) : (
+            <div className="dashboard-task-list">
+              {recentTasks.map((task) => (
+                <Link
+                  key={task.id}
+                  to="/tasks"
+                  className="dashboard-task"
+                >
+                  <div className="dashboard-task-icon">
+                    {task.status === 'In Progress' ? '◐' : '○'}
+                  </div>
 
-          <div className="task-preview">
-            {upcomingTasks.length > 0 ? (
-              upcomingTasks.map((task) => (
-                <div className="empty-preview" key={task.id}>
-                  <span>{task.title}</span>
-                  <NavLink to="/tasks">View</NavLink>
-                </div>
-              ))
-            ) : (
-              <div className="empty-preview">
-                <span>We've finished everything!</span>
-                <NavLink to="/tasks">View tasks</NavLink>
-              </div>
-            )}
-          </div>
+                  <div className="dashboard-task-content">
+                    <strong>{task.title}</strong>
+                    <span>
+                      {task.assignedTo} · {task.priority} priority
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      <section className="dashboard-timeline">
+        <div>
+          <p className="eyebrow">OUR TIMELINE</p>
+          <h2>Getting ready, one step at a time</h2>
+          <p>
+            Once we decide when we're ready to start trying, we'll add our
+            timeline here with important milestones and dates.
+          </p>
         </div>
 
-        <div className="dashboard-card">
-          <div className="card-heading">
-            <div>
-              <span className="card-label">BOOKS & RESOURCES</span>
-              <h2>What we're learning</h2>
-            </div>
-
-            <NavLink to="/resources" className="card-link">
-              View all
-            </NavLink>
-          </div>
-
-          <div className="resource-preview">
-            <div className="resource-icon">▤</div>
-
-            <div>
-              <strong>Nothing added yet</strong>
-              <p>
-                Save books, podcasts, classes, articles, and other resources
-                we want to explore.
-              </p>
-            </div>
-          </div>
+        <div className="timeline-placeholder">
+          <div className="timeline-dot active" />
+          <div className="timeline-line" />
+          <div className="timeline-dot" />
+          <div className="timeline-line" />
+          <div className="timeline-dot" />
         </div>
 
-        <div className="dashboard-card">
-          <div className="card-heading">
-            <div>
-              <span className="card-label">UP NEXT</span>
-              <h2>Things to think about</h2>
-            </div>
-
-            <NavLink to="/planning" className="card-link">
-              Planning
-            </NavLink>
-          </div>
-
-          <div className="resource-preview">
-            <div className="resource-icon">◌</div>
-
-            <div>
-              <strong>Big decisions will live here</strong>
-              <p>
-                Childcare, work, parenting, feeding, finances, and all the
-                other things we want to talk through together.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="card-heading">
-            <div>
-              <span className="card-label">INSPIRATION</span>
-              <h2>Ideas we're saving</h2>
-            </div>
-
-            <NavLink to="/inspiration" className="card-link">
-              View all
-            </NavLink>
-          </div>
-
-          <div className="inspiration-empty">
-            <span>♡</span>
-
-            <p>
-              Save nursery ideas, baby gear, clothes, announcements, and
-              anything else that makes us excited.
-            </p>
-          </div>
+        <div className="timeline-labels">
+          <span>Before Trying</span>
+          <span>Trying</span>
+          <span>Pregnancy</span>
         </div>
       </section>
     </div>

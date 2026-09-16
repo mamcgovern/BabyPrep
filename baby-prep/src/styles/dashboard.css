@@ -1,185 +1,321 @@
-.countdown-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-  margin-bottom: 18px;
+.dashboard-page {
+  max-width: 1200px;
 }
 
-.countdown-card {
-  min-height: 170px;
-  padding: 26px 28px;
+.dashboard-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 28px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 500;
+}
+
+.dashboard-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 190px;
+  padding: 32px 38px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 90% 20%, var(--color-blue-light), transparent 32%),
+    radial-gradient(circle at 10% 100%, var(--color-pink-light), transparent 35%),
+    var(--color-white);
+  box-shadow: var(--shadow-card);
+}
+
+.dashboard-hero-content {
+  width: min(100%, 650px);
+}
+
+.progress-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.progress-heading h2 {
+  margin: 0;
+  font-size: 38px;
+  font-weight: 600;
+}
+
+.progress-heading span {
+  color: var(--color-text-light);
+  font-size: 13px;
+}
+
+.dashboard-hero .progress-bar {
+  height: 9px;
+}
+
+.progress-description {
+  margin: 12px 0 0;
+  color: var(--color-text-light);
+  font-size: 12px;
+}
+
+.dashboard-hero-mark {
+  display: grid;
+  place-items: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--color-white);
+  color: var(--color-pink);
+  font-size: 38px;
+  box-shadow: var(--shadow-card);
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.dashboard-stat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   background: var(--color-white);
   box-shadow: var(--shadow-card);
 }
 
-.countdown-card.accent {
-  background: var(--color-pink-pale);
-  border-color: var(--color-pink-light);
+.dashboard-stat-card strong {
+  margin: 5px 0 2px;
+  font-size: 28px;
+  font-weight: 600;
 }
 
-.countdown-card:nth-child(1) {
-  background: var(--color-blue-pale);
-  border-color: var(--color-blue-light);
-}
-
-.card-label {
-  margin-bottom: 8px;
-  color: var(--color-text-light);
-  font-size: 10px;
+.stat-label {
+  color: var(--color-text-muted);
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
 }
 
-.countdown-number {
-  margin: 4px 0;
-  color: var(--color-text);
-  font-family: var(--font-display);
-  font-size: 43px;
-}
-
-.countdown-caption {
-  margin-bottom: 0;
+.stat-detail {
   color: var(--color-text-light);
   font-size: 11px;
 }
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 18px;
   margin-bottom: 18px;
 }
 
 .dashboard-card {
-  min-height: 205px;
-  padding: 25px 27px;
+  min-width: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-white);
   box-shadow: var(--shadow-card);
 }
 
-.card-heading {
+.dashboard-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
+  padding: 22px 22px 16px;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
-.card-heading .card-label {
-  margin-bottom: 5px;
+.dashboard-card-header h2 {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
 }
 
-.card-heading h2 {
-  margin-bottom: 0;
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.card-link {
-  color: #8a9da8;
+.dashboard-card-header a {
+  margin-top: 3px;
+  color: var(--color-text-light);
   font-size: 11px;
   font-weight: 600;
+  text-decoration: none;
+}
+
+.dashboard-card-header a:hover {
+  color: var(--color-text);
+}
+
+.dashboard-task-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 22px;
+  border-bottom: 1px solid var(--color-border-light);
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.dashboard-task:last-child {
+  border-bottom: 0;
+}
+
+.dashboard-task:hover {
+  background: var(--color-cream);
+}
+
+.dashboard-task-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-pink);
+  font-size: 13px;
+}
+
+.dashboard-task-content {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dashboard-task-content strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.progress-percent {
-  color: var(--color-pink);
-  font-family: var(--font-display);
-  font-size: 27px;
-}
-
-.progress-bar {
-  height: 7px;
-  margin: 28px 0 9px;
-  overflow: hidden;
-  border-radius: 20px;
-  background: var(--color-pink-light);
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: var(--color-pink);
-}
-
-.progress-details {
-  display: flex;
-  justify-content: space-between;
-  color: var(--color-text-muted);
+.dashboard-task-content span {
+  color: var(--color-text-light);
   font-size: 10px;
 }
 
-.task-preview {
-  margin-top: 28px;
-}
-
-.empty-preview {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  color: var(--color-text-muted);
-  font-size: 12px;
-}
-
-.empty-preview a {
-  color: #8a9da8;
+.task-status {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: var(--color-blue-pale);
+  color: var(--color-text-light);
+  font-size: 9px;
   font-weight: 600;
 }
 
-.resource-preview {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 28px;
+.task-status.in-progress {
+  background: var(--color-pink-pale);
 }
 
-.resource-icon {
+.task-status.complete {
+  background: var(--color-blue-light);
+}
+
+.dashboard-empty {
   display: grid;
   place-items: center;
-  width: 43px;
-  height: 43px;
-  border-radius: 8px;
-  background: var(--color-blue-light);
-  color: #7698ab;
-  font-size: 19px;
+  min-height: 150px;
+  padding: 20px;
+  color: var(--color-text-light);
+  text-align: center;
 }
 
-.resource-preview strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 12px;
+.dashboard-empty span {
+  margin-bottom: 5px;
+  color: var(--color-pink);
+  font-size: 22px;
+}
+
+.dashboard-empty p {
+  margin: 0;
+  font-size: 11px;
+}
+
+.dashboard-timeline {
+  display: flex;
+  flex-direction: column;
+  padding: 26px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
+}
+
+.dashboard-timeline h2 {
+  margin: 2px 0 7px;
+  font-size: 18px;
   font-weight: 600;
 }
 
-.resource-preview p {
-  max-width: 320px;
-  margin-bottom: 0;
-  color: var(--color-text-muted);
+.dashboard-timeline p:not(.eyebrow) {
+  max-width: 600px;
+  margin: 0;
+  color: var(--color-text-light);
   font-size: 11px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-.inspiration-empty {
+.timeline-placeholder {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-top: 28px;
+  width: 80%;
+  margin: 28px auto 8px;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-white);
+}
+
+.timeline-dot.active {
+  border-color: var(--color-pink);
+  background: var(--color-pink);
+}
+
+.timeline-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 82%;
+  margin: 0 auto;
   color: var(--color-text-muted);
+  font-size: 9px;
 }
 
-.inspiration-empty span {
-  color: var(--color-pink);
-  font-size: 27px;
+.timeline-labels span:first-child {
+  color: var(--color-text);
+  font-weight: 600;
 }
 
-.inspiration-empty p {
-  max-width: 320px;
-  margin-bottom: 0;
-  font-size: 11px;
-  line-height: 1.5;
+.dashboard-loading {
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  color: var(--color-text-light);
+  font-size: 12px;
 }
