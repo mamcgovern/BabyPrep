@@ -8,6 +8,8 @@ import BabyGear from './pages/BabyGear';
 import Planning from './pages/Planning';
 import Budget from './pages/Budget';
 import Appointments from './pages/Appointments';
+import Names from './pages/Names';
+import Settings from './pages/Settings';
 
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
@@ -17,6 +19,7 @@ import { BabyGearProvider } from './context/BabyGearContext';
 import { PlanningProvider } from './context/PlanningContext';
 import { BudgetProvider } from './context/BudgetContext';
 import { AppointmentProvider } from './context/AppointmentContext';
+import { NameProvider } from './context/NameContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -28,7 +31,7 @@ const navigation = [
   { label: 'Budget', path: '/budget', icon: '$' },
   { label: 'Appointments', path: '/appointments', icon: '□' },
   { label: 'Baby Names', path: '/names', icon: 'A' },
-  { label: 'Questions for Us', path: '/questions', icon: '?' },
+  { label: 'Questions', path: '/questions', icon: '?' },
   { label: 'Notes', path: '/notes', icon: '≡' },
 ];
 
@@ -126,15 +129,7 @@ function AppShell() {
           <Route path="/planning" element={<Planning />} />
           <Route path="/budget" element={<Budget />} />
           <Route path="/appointments" element={<Appointments />} />
-          <Route
-            path="/names"
-            element={
-              <PlaceholderPage
-                title="Baby Names"
-                description="Keep track of the names you love, like, maybe, and absolutely don't want."
-              />
-            }
-          />
+          <Route path="/names" element={<Names />} />
           <Route
             path="/questions"
             element={
@@ -153,15 +148,7 @@ function AppShell() {
               />
             }
           />
-          <Route
-            path="/settings"
-            element={
-              <PlaceholderPage
-                title="Settings"
-                description="Customize your baby prep workspace."
-              />
-            }
-          />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
     </div>
@@ -189,9 +176,13 @@ function ProtectedApp() {
         <InspirationProvider>
           <BudgetProvider>
             <BabyGearProvider>
-              <PlanningProvider>
-                <AppShell />
-              </PlanningProvider>
+                <AppointmentProvider>
+                  <NameProvider>
+                    <PlanningProvider>
+                      <AppShell />
+                    </PlanningProvider>
+                  </NameProvider>
+                </AppointmentProvider>
             </BabyGearProvider>
           </BudgetProvider>
         </InspirationProvider>
