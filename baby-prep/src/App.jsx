@@ -5,12 +5,14 @@ import Tasks from './pages/Tasks';
 import Resources from './pages/Resources';
 import Inspiration from './pages/Inspiration';
 import BabyGear from './pages/BabyGear';
+import Planning from './pages/Planning';
 
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
 import { ResourceProvider } from './context/ResourceContext';
 import { InspirationProvider } from './context/InspirationContext';
 import { BabyGearProvider } from './context/BabyGearContext';
+import { PlanningProvider } from './context/PlanningContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
@@ -122,15 +124,7 @@ function AppShell() {
 
           <Route path="/inspiration" element={<Inspiration />} />
 
-          <Route
-            path="/planning"
-            element={
-              <PlaceholderPage
-                title="Planning"
-                description="The bigger conversations and decisions you'll want to make together."
-              />
-            }
-          />
+          <Route path="/planning" element={<Planning />} />
 
           <Route
             path="/budget"
@@ -217,7 +211,9 @@ function ProtectedApp() {
       <ResourceProvider>
         <InspirationProvider>
           <BabyGearProvider>
-            <AppShell />
+            <PlanningProvider>
+              <AppShell />
+            </PlanningProvider>
           </BabyGearProvider>
         </InspirationProvider>
       </ResourceProvider>
