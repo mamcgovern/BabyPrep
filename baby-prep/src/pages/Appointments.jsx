@@ -18,8 +18,6 @@ const emptyForm = {
   status: 'Upcoming',
 };
 
-const { babyNamePlaceholder } = useNames();
-
 function formatDate(date) {
   if (!date) {
     return 'Date not set';
@@ -442,6 +440,8 @@ export default function Appointments() {
       await addAppointment(form);
     }
   };
+
+  const { babyNamePlaceholder } = useNames();
 
   return (
     <div className="page appointments-page">

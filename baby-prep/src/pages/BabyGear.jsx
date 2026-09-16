@@ -38,8 +38,6 @@ const statusClassNames = {
   "Don't Want": 'dont-want',
 };
 
-const { babyNamePlaceholder } = useNames();
-
 function formatCurrency(value) {
   const number = Number(value);
 
@@ -312,8 +310,8 @@ function GearModal({
                   key={status}
                   type="button"
                   className={`gear-status-option ${form.status === status
-                      ? `selected ${statusClassNames[status]}`
-                      : ''
+                    ? `selected ${statusClassNames[status]}`
+                    : ''
                     }`}
                   onClick={() =>
                     setForm((current) => ({
@@ -918,6 +916,8 @@ function BabyGear() {
     useState([]);
   const [showCompare, setShowCompare] =
     useState(false);
+
+  const { babyNamePlaceholder } = useNames();
 
   const visibleItems = useMemo(() => {
     const searchValue = search

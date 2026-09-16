@@ -16,8 +16,6 @@ const emptyForm = {
   notes: '',
 };
 
-const { babyNamePlaceholder } = useNames();
-
 function PlanningModal({
   isOpen,
   onClose,
@@ -314,6 +312,8 @@ function Planning() {
       console.error('Error deleting planning item:', deleteError);
     }
   };
+
+  const { babyNamePlaceholder } = useNames();
 
   return (
     <div className="page planning-page">
