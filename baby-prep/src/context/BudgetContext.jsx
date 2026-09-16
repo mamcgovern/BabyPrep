@@ -7,7 +7,14 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { db } from '../services/firebase';
 import { FAMILY_ID } from '../config/baby';
 
@@ -24,18 +31,19 @@ export const budgetCategories = [
   'Baby Gear',
   'Nursery',
   'Clothing',
-  'Diapering',
   'Feeding',
+  'Diapering',
+  'Healthcare',
   'Childcare',
-  'Medical',
   'Classes & Education',
-  'Appointments',
+  'Birth',
   'Other',
 ];
 
 export const budgetStatuses = [
   'Planned',
   'Purchased',
+  'Skipped',
 ];
 
 function sortBudgetItems(items) {
@@ -76,15 +84,11 @@ export function BudgetProvider({ children }) {
   }, []);
 
   const addBudgetItem = async (budgetData) => {
-    const budgetDoc = await addDoc(budgetCollection, {
+    const budgetRef = await addDoc(budgetCollection, {
       name: budgetData.name || '',
       category: budgetData.category || 'Other',
       plannedAmount: Number(budgetData.plannedAmount) || 0,
-      actualAmount:
-        budgetData.actualAmount === '' ||
-        budgetData.actualAmount == null
-          ? null
-          : Number(budgetData.actualAmount),
+      actualAmount: Number(budgetData.actualAmount) || 0,
       status: budgetData.status || 'Planned',
       notes: budgetData.notes || '',
       sourceType: budgetData.sourceType || 'manual',
@@ -94,7 +98,21 @@ export function BudgetProvider({ children }) {
       updatedAt: serverTimestamp(),
     });
 
-    return budgetDoc.id;
+    return budgetRef.id;
+  };
+
+  const addBudgetItemFromBabyGear = async (gearItem) => {
+    return addBudgetItem({
+      name: gearItem.name,
+      category: 'Baby Gear',
+      plannedAmount: Number(gearItem.price) || 0,
+      actualAmount: 0,
+      status: 'Planned',
+      notes: '',
+      sourceType: 'babyGear',
+      sourceId: gearItem.id,
+      sourceName: gearItem.name,
+    });
   };
 
   const updateBudgetItem = async (budgetId, budgetData) => {
@@ -108,69 +126,70 @@ export function BudgetProvider({ children }) {
     await deleteDoc(doc(budgetCollection, budgetId));
   };
 
-  const addFromBabyGear = async (gearItem) => {
-    if (!gearItem?.id) {
-      throw new Error('Baby gear item is missing an ID.');
-    }
-
-    if (gearItem.budgetItemId) {
-      return gearItem.budgetItemId;
-    }
-
-    const budgetId = await addBudgetItem({
-      name: gearItem.name,
-      category: 'Baby Gear',
-      plannedAmount: gearItem.price,
-      actualAmount: null,
-      status: 'Planned',
-      notes: gearItem.notes || '',
-      sourceType: 'babyGear',
-      sourceId: gearItem.id,
-      sourceName: gearItem.name,
+  const detachBudgetSource = async (budgetId) => {
+    await updateBudgetItem(budgetId, {
+      sourceType: 'manual',
+      sourceId: null,
     });
-
-    return budgetId;
   };
 
-  const totals = useMemo(() => {
-    const planned = items.reduce(
+  const getBudgetItem = useCallback(
+    (budgetId) => {
+      return items.find((item) => item.id === budgetId) || null;
+    },
+    [items]
+  );
+
+  const getBudgetItemForSource = useCallback(
+    (sourceType, sourceId) => {
+      return (
+        items.find(
+          (item) =>
+            item.sourceType === sourceType &&
+            item.sourceId === sourceId
+        ) || null
+      );
+    },
+    [items]
+  );
+
+  const stats = useMemo(() => {
+    const activeItems = items.filter((item) => item.status !== 'Skipped');
+
+    const planned = activeItems.reduce(
       (total, item) => total + (Number(item.plannedAmount) || 0),
       0
     );
 
-    const actual = items.reduce(
+    const spent = items.reduce(
       (total, item) => total + (Number(item.actualAmount) || 0),
       0
     );
 
-    const remaining = Math.max(planned - actual, 0);
-
     return {
+      total: items.length,
       planned,
-      actual,
-      remaining,
+      spent,
+      remaining: planned - spent,
+      purchased: items.filter((item) => item.status === 'Purchased').length,
+      skipped: items.filter((item) => item.status === 'Skipped').length,
     };
   }, [items]);
-
-  const stats = useMemo(() => ({
-    total: items.length,
-    planned: items.filter((item) => item.status !== 'Purchased').length,
-    purchased: items.filter((item) => item.status === 'Purchased').length,
-    fromBabyGear: items.filter((item) => item.sourceType === 'babyGear').length,
-  }), [items]);
 
   return (
     <BudgetContext.Provider
       value={{
         items,
-        totals,
         stats,
         loading,
         error,
         addBudgetItem,
+        addBudgetItemFromBabyGear,
         updateBudgetItem,
         deleteBudgetItem,
-        addFromBabyGear,
+        detachBudgetSource,
+        getBudgetItem,
+        getBudgetItemForSource,
       }}
     >
       {children}

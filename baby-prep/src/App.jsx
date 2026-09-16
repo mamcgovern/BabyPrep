@@ -59,7 +59,6 @@ function AppShell() {
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">✦</div>
-
           <div>
             <div className="brand-name">Before Baby</div>
             <div className="brand-subtitle">Maddie & Nick</div>
@@ -107,7 +106,6 @@ function AppShell() {
 
           <div className="couple-card">
             <div className="avatar">M</div>
-
             <div>
               <strong>Maddie & Nick</strong>
               <span>Our baby prep</span>
@@ -125,7 +123,6 @@ function AppShell() {
           <Route path="/inspiration" element={<Inspiration />} />
           <Route path="/planning" element={<Planning />} />
           <Route path="/budget" element={<Budget />} />
-
           <Route
             path="/appointments"
             element={
@@ -135,7 +132,6 @@ function AppShell() {
               />
             }
           />
-
           <Route
             path="/names"
             element={
@@ -145,7 +141,6 @@ function AppShell() {
               />
             }
           />
-
           <Route
             path="/questions"
             element={
@@ -155,7 +150,6 @@ function AppShell() {
               />
             }
           />
-
           <Route
             path="/notes"
             element={
@@ -165,7 +159,6 @@ function AppShell() {
               />
             }
           />
-
           <Route
             path="/settings"
             element={
@@ -197,19 +190,19 @@ function ProtectedApp() {
   }
 
   return (
-    <BudgetProvider>
-      <TaskProvider>
-        <ResourceProvider>
-          <InspirationProvider>
+    <TaskProvider>
+      <ResourceProvider>
+        <InspirationProvider>
+          <BudgetProvider>
             <BabyGearProvider>
               <PlanningProvider>
                 <AppShell />
               </PlanningProvider>
             </BabyGearProvider>
-          </InspirationProvider>
-        </ResourceProvider>
-      </TaskProvider>
-    </BudgetProvider>
+          </BudgetProvider>
+        </InspirationProvider>
+      </ResourceProvider>
+    </TaskProvider>
   );
 }
 
