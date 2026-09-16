@@ -1,0 +1,665 @@
+.baby-gear-page {
+  position: relative;
+}
+
+.gear-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.gear-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.gear-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gear-filter-label {
+  color: var(--color-text-light);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.baby-gear-page .board-pills {
+  margin-bottom: 0;
+}
+
+.baby-gear-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.baby-gear-card {
+  overflow: hidden;
+  background: var(--color-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.baby-gear-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.baby-gear-card.selected {
+  border-color: var(--color-pink);
+  box-shadow: 0 0 0 2px var(--color-pink-pale);
+}
+
+.baby-gear-image-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+.baby-gear-image {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.baby-gear-no-image {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-blue-pale);
+  color: var(--color-blue);
+}
+
+.baby-gear-no-image span {
+  font-size: 34px;
+}
+
+.baby-gear-no-image p {
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+
+.gear-select-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  color: var(--color-text-light);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+}
+
+.gear-select-button.selected {
+  background: var(--color-pink);
+  border-color: var(--color-pink);
+  color: var(--color-white);
+}
+
+.baby-gear-favorite {
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  color: var(--color-pink);
+  font-size: 15px;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
+}
+
+.baby-gear-card-content {
+  padding: 15px;
+}
+
+.baby-gear-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.baby-gear-category {
+  color: var(--color-text-light);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gear-status {
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.gear-status-researching {
+  background: var(--color-blue-pale);
+  color: #64859a;
+}
+
+.gear-status-considering {
+  background: var(--color-lavender-light);
+  color: #756b8b;
+}
+
+.gear-status-decided {
+  background: #edf5ef;
+  color: #67806f;
+}
+
+.gear-status-dont-want {
+  background: var(--color-background);
+  color: var(--color-text-muted);
+}
+
+.baby-gear-card h2 {
+  margin: 0 0 3px;
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.baby-gear-brand {
+  margin: 0;
+  color: var(--color-text-light);
+  font-size: 11px;
+}
+
+.baby-gear-price {
+  margin: 9px 0 0;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.baby-gear-ratings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 13px;
+  padding: 10px;
+  background: var(--color-background);
+  border-radius: var(--radius-sm);
+}
+
+.baby-gear-ratings div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.baby-gear-ratings span {
+  color: var(--color-text-muted);
+  font-size: 9px;
+}
+
+.baby-gear-ratings strong {
+  color: var(--color-pink);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+
+.baby-gear-notes {
+  margin: 12px 0 0;
+  color: var(--color-text-light);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.baby-gear-card-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.baby-gear-card-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.baby-gear-source-link {
+  color: var(--color-text);
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.baby-gear-source-link:hover {
+  color: var(--color-pink);
+}
+
+.baby-gear-action-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.baby-gear-action-button:hover {
+  color: var(--color-text);
+}
+
+.gear-comparison-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: var(--color-pink-pale);
+  border: 1px solid var(--color-pink-light);
+  border-radius: var(--radius-md);
+}
+
+.gear-comparison-bar > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gear-comparison-bar strong {
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.gear-comparison-bar span {
+  color: var(--color-text-light);
+  font-size: 10px;
+}
+
+.gear-comparison-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gear-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(60, 55, 55, 0.35);
+}
+
+.gear-modal,
+.gear-comparison-modal {
+  width: min(720px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: var(--color-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(60, 55, 55, 0.15);
+}
+
+.gear-comparison-modal {
+  width: min(1100px, 100%);
+}
+
+.gear-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.gear-modal-eyebrow {
+  margin: 0 0 5px;
+  color: var(--color-text-light);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.gear-modal-header h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.gear-modal-close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: var(--color-background);
+  border-radius: 50%;
+  color: var(--color-text-light);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.gear-modal-close:hover {
+  background: var(--color-pink-pale);
+  color: var(--color-text);
+}
+
+.gear-modal form {
+  padding: 22px 24px 24px;
+}
+
+.gear-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.gear-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gear-form-field-full {
+  grid-column: 1 / -1;
+}
+
+.gear-form-field > span,
+.gear-form-section-heading > div > span {
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.gear-form-field input,
+.gear-form-field select,
+.gear-form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gear-form-field input:focus,
+.gear-form-field select:focus,
+.gear-form-field textarea:focus {
+  border-color: var(--color-pink);
+  box-shadow: 0 0 0 3px var(--color-pink-pale);
+}
+
+.gear-form-field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.gear-price-input {
+  position: relative;
+}
+
+.gear-price-input > span {
+  position: absolute;
+  top: 10px;
+  left: 11px;
+  color: var(--color-text-light);
+  font-size: 12px;
+}
+
+.gear-price-input input {
+  padding-left: 24px;
+}
+
+.gear-form-section {
+  padding-top: 3px;
+}
+
+.gear-form-section-heading {
+  margin-bottom: 10px;
+}
+
+.gear-form-section-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gear-form-section-heading small {
+  color: var(--color-text-muted);
+  font-size: 9px;
+}
+
+.gear-ratings-grid,
+.gear-comparison-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.gear-rating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--color-background);
+  border-radius: var(--radius-sm);
+}
+
+.gear-rating > span {
+  color: var(--color-text);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.gear-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.gear-stars button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-border);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.gear-stars button.selected {
+  color: var(--color-pink);
+}
+
+.gear-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--color-text);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.gear-checkbox input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-pink);
+}
+
+.gear-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.gear-modal-actions .secondary-button,
+.gear-modal-actions .primary-button {
+  min-width: 110px;
+}
+
+.gear-comparison-scroll {
+  overflow-x: auto;
+  padding: 20px 24px 24px;
+}
+
+.gear-comparison-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.gear-comparison-table th,
+.gear-comparison-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border-light);
+  text-align: left;
+  vertical-align: top;
+  font-size: 11px;
+}
+
+.gear-comparison-table thead th {
+  background: var(--color-background);
+}
+
+.gear-comparison-table thead th:first-child {
+  width: 120px;
+}
+
+.gear-comparison-table tbody th {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.gear-comparison-table tbody td {
+  color: var(--color-text-light);
+  line-height: 1.5;
+}
+
+.comparison-product {
+  display: flex;
+  min-width: 170px;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.comparison-product img,
+.comparison-product-placeholder {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.comparison-product-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-pink-pale);
+  color: var(--color-pink);
+  font-size: 24px;
+}
+
+.comparison-product strong {
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.comparison-product a {
+  color: var(--color-text-light);
+  font-size: 9px;
+  text-decoration: none;
+}
+
+.comparison-product a:hover {
+  color: var(--color-pink);
+}
+
+@media (max-width: 1100px) {
+  .baby-gear-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .gear-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gear-comparison-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  .gear-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .baby-gear-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gear-form-grid,
+  .gear-ratings-grid,
+  .gear-comparison-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gear-form-field-full {
+    grid-column: auto;
+  }
+
+  .gear-modal-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .gear-modal,
+  .gear-comparison-modal {
+    max-height: calc(100vh - 24px);
+  }
+
+  .gear-modal-header,
+  .gear-modal form {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .gear-comparison-scroll {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}

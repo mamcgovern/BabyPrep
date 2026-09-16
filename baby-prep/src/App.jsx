@@ -4,17 +4,19 @@ import Login from './pages/Login';
 import Tasks from './pages/Tasks';
 import Resources from './pages/Resources';
 import Inspiration from './pages/Inspiration';
+import BabyGear from './pages/BabyGear';
 
 import { useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
 import { ResourceProvider } from './context/ResourceContext';
 import { InspirationProvider } from './context/InspirationContext';
+import { BabyGearProvider } from './context/BabyGearContext';
 
 const navigation = [
   { label: 'Dashboard', path: '/', icon: '⌂' },
   { label: 'Tasks', path: '/tasks', icon: '✓' },
   { label: 'Books & Resources', path: '/resources', icon: '▤' },
-  { label: 'Registry', path: '/registry', icon: '□' },
+  { label: 'Baby Gear', path: '/baby-gear', icon: '□' },
   { label: 'Inspiration', path: '/inspiration', icon: '♡' },
   { label: 'Planning', path: '/planning', icon: '◌' },
   { label: 'Budget', path: '/budget', icon: '$' },
@@ -116,15 +118,7 @@ function AppShell() {
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/resources" element={<Resources />} />
 
-          <Route
-            path="/registry"
-            element={
-              <PlaceholderPage
-                title="Registry"
-                description="Research, compare, save, and eventually register for the things you actually want."
-              />
-            }
-          />
+          <Route path="/baby-gear" element={<BabyGear />} />
 
           <Route path="/inspiration" element={<Inspiration />} />
 
@@ -222,7 +216,9 @@ function ProtectedApp() {
     <TaskProvider>
       <ResourceProvider>
         <InspirationProvider>
-          <AppShell />
+          <BabyGearProvider>
+            <AppShell />
+          </BabyGearProvider>
         </InspirationProvider>
       </ResourceProvider>
     </TaskProvider>
